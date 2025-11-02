@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_primary"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/background_secondary"
+            android:padding="@dimen/padding_medium"
+            android:elevation="4dp">
+
+            <Button
+                android:id="@+id/cancelButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/button_secondary"
+                android:text="×"
+                android:textColor="@color/accent_yellow"
+                android:textSize="@dimen/text_xlarge" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/payment_title"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_xlarge"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
+            app:cardBackgroundColor="@color/background_card"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="@dimen/card_elevation">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/padding_medium">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Booking Summary"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_large"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <TextView
+                    android:id="@+id/slotNameText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Parking Slot Name"
+                    android:textColor="@color/accent_yellow"
+                    android:textSize="@dimen/text_medium"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_small" />
+
+                <TextView
+                    android:id="@+id/bookingDetailsText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Booking details"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_small"
+                    android:lineSpacingExtra="4dp" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Payment Details"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_large"
+            android:textStyle="bold"
+            android:layout_marginStart="@dimen/margin_medium"
+            android:layout_marginBottom="@dimen/margin_medium" />
+
+
+        <EditText
+            android:id="@+id/cardNumberInput"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/input_height"
+            android:layout_marginStart="@dimen/margin_medium"
+            android:layout_marginEnd="@dimen/margin_medium"
+            android:layout_marginBottom="@dimen/margin_medium"
+            android:background="@drawable/input_background"
+            android:hint="@string/card_number_hint"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_muted"
+            android:inputType="number"
+            android:maxLength="16"
+            android:paddingStart="@dimen/padding_medium"
+            android:paddingEnd="@dimen/padding_medium" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginStart="@dimen/margin_medium"
+            android:layout_marginEnd="@dimen/margin_medium"
+            android:layout_marginBottom="@dimen/margin_medium">
+
+            <EditText
+                android:id="@+id/expiryInput"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/input_height"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/margin_small"
+                android:background="@drawable/input_background"
+                android:hint="@string/expiry_hint"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_muted"
+                android:inputType="date"
+                android:maxLength="5"
+                android:paddingStart="@dimen/padding_medium"
+                android:paddingEnd="@dimen/padding_medium" />
+
+            <EditText
+                android:id="@+id/cvvInput"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/input_height"
+                android:layout_weight="1"
+                android:background="@drawable/input_background"
+                android:hint="@string/cvv_hint"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_muted"
+                android:inputType="numberPassword"
+                android:maxLength="3"
+                android:paddingStart="@dimen/padding_medium"
+                android:paddingEnd="@dimen/padding_medium" />
+
+        </LinearLayout>
+
+
+        <EditText
+            android:id="@+id/cardHolderInput"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/input_height"
+            android:layout_marginStart="@dimen/margin_medium"
+            android:layout_marginEnd="@dimen/margin_medium"
+            android:layout_marginBottom="@dimen/margin_medium"
+            android:background="@drawable/input_background"
+            android:hint="@string/card_holder_hint"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_muted"
+            android:inputType="textCapWords"
+            android:paddingStart="@dimen/padding_medium"
+            android:paddingEnd="@dimen/padding_medium" />
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/background_secondary"
+            android:padding="@dimen/padding_medium"
+            android:elevation="8dp">
+
+            <TextView
+                android:id="@+id/totalAmountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total: Rs10.00"
+                android:textColor="@color/accent_yellow"
+                android:textSize="@dimen/text_xlarge"
+                android:textStyle="bold"
+                android:layout_gravity="center"
+                android:layout_marginBottom="@dimen/margin_medium" />
+
+            <Button
+                android:id="@+id/payButton"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:background="@drawable/button_primary"
+                android:text="@string/pay_button"
+                android:textColor="@color/text_on_yellow"
+                android:textSize="@dimen/text_large"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

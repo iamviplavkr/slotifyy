@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_primary"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="@dimen/padding_xlarge">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✓"
+            android:textColor="@color/success_green"
+            android:textSize="80sp"
+            android:textStyle="bold"
+            android:layout_marginTop="@dimen/margin_xlarge"
+            android:layout_marginBottom="@dimen/margin_medium" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/confirmation_title"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_xxlarge"
+            android:textStyle="bold"
+            android:layout_marginBottom="@dimen/margin_small" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your parking slot has been successfully booked!"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_medium"
+            android:gravity="center"
+            android:layout_marginBottom="@dimen/margin_xlarge" />
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_large"
+            app:cardBackgroundColor="@color/background_card"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="@dimen/card_elevation">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/padding_medium">
+
+
+                <TextView
+                    android:id="@+id/bookingIdText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Booking ID: ABC12345"
+                    android:textColor="@color/accent_yellow"
+                    android:textSize="@dimen/text_medium"
+                    android:textStyle="bold"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+
+                <TextView
+                    android:id="@+id/qrCodePlaceholder"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_gravity="center"
+                    android:background="@color/background_input"
+                    android:gravity="center"
+                    android:text="[QR Code]\nScan at entry"
+                    android:textColor="@color/text_muted"
+                    android:textSize="@dimen/text_medium"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/divider_color"
+                    android:layout_marginTop="@dimen/margin_medium"
+                    android:layout_marginBottom="@dimen/margin_medium" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/slotNameText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Parking Slot Name"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_large"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="@dimen/margin_small" />
+
+                    <TextView
+                        android:id="@+id/slotAddressText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Address"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_small"
+                        android:layout_marginBottom="@dimen/margin_medium" />
+
+                    <!-- Time -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="@dimen/margin_small">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Time:"
+                            android:textColor="@color/text_muted"
+                            android:textSize="@dimen/text_small" />
+
+                        <TextView
+                            android:id="@+id/bookingTimeText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="10:00 AM - 12:00 PM"
+                            android:textColor="@color/text_primary"
+                            android:textSize="@dimen/text_small" />
+
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="@dimen/margin_small">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Duration:"
+                            android:textColor="@color/text_muted"
+                            android:textSize="@dimen/text_small" />
+
+                        <TextView
+                            android:id="@+id/durationText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2 hours"
+                            android:textColor="@color/text_primary"
+                            android:textSize="@dimen/text_small" />
+
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="@dimen/margin_small">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Vehicle:"
+                            android:textColor="@color/text_muted"
+                            android:textSize="@dimen/text_small" />
+
+                        <TextView
+                            android:id="@+id/vehicleNumberText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ABC-1234"
+                            android:textColor="@color/text_primary"
+                            android:textSize="@dimen/text_small" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/divider_color"
+                        android:layout_marginTop="@dimen/margin_small"
+                        android:layout_marginBottom="@dimen/margin_small" />
+
+
+                    <TextView
+                        android:id="@+id/totalAmountText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Paid: Rs10.00"
+                        android:textColor="@color/accent_yellow"
+                        android:textSize="@dimen/text_large"
+                        android:textStyle="bold"
+                        android:layout_gravity="end" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+
+        <Button
+            android:id="@+id/viewDirectionsButton"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:background="@drawable/button_secondary"
+            android:text="@string/view_directions"
+            android:textColor="@color/accent_yellow"
+            android:textSize="@dimen/text_large"
+            android:textStyle="bold"
+            android:layout_marginBottom="@dimen/margin_medium" />
+
+        <Button
+            android:id="@+id/doneButton"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:background="@drawable/button_primary"
+            android:text="@string/done"
+            android:textColor="@color/text_on_yellow"
+            android:textSize="@dimen/text_large"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</ScrollView>

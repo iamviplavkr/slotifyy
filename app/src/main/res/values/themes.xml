@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="Theme.Slotify" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/accent_yellow</item>
+        <item name="colorPrimaryVariant">@color/accent_yellow_dark</item>
+        <item name="colorOnPrimary">@color/text_on_yellow</item>
+
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/accent_yellow</item>
+        <item name="colorSecondaryVariant">@color/accent_yellow_dark</item>
+        <item name="colorOnSecondary">@color/text_on_yellow</item>
+
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/background_primary</item>
+        <item name="colorSurface">@color/background_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/status_bar</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Window background -->
+        <item name="android:windowBackground">@color/background_primary</item>
+    </style>
+</resources>

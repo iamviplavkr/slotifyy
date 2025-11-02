@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Slotify</string>
+
+    <!-- Splash Screen -->
+    <string name="tagline">Your Spot, Just a Tap Away!</string>
+
+    <!-- Login Screen -->
+    <string name="login_title">Welcome Back</string>
+    <string name="email_hint">Email Address</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="no_account">Don\'t have an account? <b>Sign Up</b></string>
+
+    <!-- Signup Screen -->
+    <string name="signup_title">Create Account</string>
+    <string name="name_hint">Full Name</string>
+    <string name="phone_hint">Phone Number</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="signup_button">Sign Up</string>
+    <string name="have_account">Already have an account? <b>Login</b></string>
+
+    <!-- Home Screen -->
+    <string name="search_hint">Search parking location...</string>
+    <string name="search_button">Search</string>
+    <string name="nearby_parking">Nearby Parking</string>
+    <string name="logout">Logout</string>
+
+    <!-- Booking Screen -->
+    <string name="booking_title">Book Your Slot</string>
+    <string name="select_duration">Select Duration</string>
+    <string name="vehicle_number_hint">Vehicle Number</string>
+    <string name="proceed_to_payment">Proceed to Payment</string>
+    <string name="back">Back</string>
+
+    <!-- Payment Screen -->
+    <string name="payment_title">Payment</string>
+    <string name="card_number_hint">Card Number</string>
+    <string name="expiry_hint">MM/YY</string>
+    <string name="cvv_hint">CVV</string>
+    <string name="card_holder_hint">Cardholder Name</string>
+    <string name="pay_button">Pay Now</string>
+    <string name="price_format">₹%1$.2f/hr</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Confirmation Screen -->
+    <string name="confirmation_title">Booking Confirmed!</string>
+    <string name="booking_id">Booking ID</string>
+    <string name="scan_qr">Scan this QR code at the entry gate</string>
+    <string name="done">Done</string>
+    <string name="view_directions">View Directions</string>
+
+    <!-- Common -->
+    <string name="loading">Loading...</string>
+    <string name="error">Something went wrong</string>
+</resources>
