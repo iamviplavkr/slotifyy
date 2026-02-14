@@ -1,27 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme -->
-    <style name="Theme.Slotify" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary colors -->
-        <item name="colorPrimary">@color/accent_yellow</item>
-        <item name="colorPrimaryVariant">@color/accent_yellow_dark</item>
-        <item name="colorOnPrimary">@color/text_on_yellow</item>
+    <!-- Base App Theme -->
+    <style name="Theme.Slotify" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/background</item>
 
-        <!-- Secondary colors -->
-        <item name="colorSecondary">@color/accent_yellow</item>
-        <item name="colorSecondaryVariant">@color/accent_yellow_dark</item>
-        <item name="colorOnSecondary">@color/text_on_yellow</item>
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/primary</item>
+        <item name="colorSecondaryVariant">@color/primary_dark</item>
+        <item name="colorOnSecondary">@color/background</item>
 
         <!-- Background colors -->
-        <item name="android:colorBackground">@color/background_primary</item>
-        <item name="colorSurface">@color/background_card</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/text_primary</item>
 
-        <!-- Status bar -->
-        <item name="android:statusBarColor">@color/status_bar</item>
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
         <item name="android:windowLightStatusBar">false</item>
 
-        <!-- Window background -->
-        <item name="android:windowBackground">@color/background_primary</item>
+        <!-- Error color -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/white</item>
+    </style>
+
+    <!-- Splash Theme -->
+    <style name="Theme.Slotify.Splash" parent="Theme.Slotify">
+        <item name="android:windowBackground">@color/background</item>
     </style>
 </resources>

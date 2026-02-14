@@ -1,57 +1,170 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- ================================================= -->
+    <!-- APP -->
+    <!-- ================================================= -->
     <string name="app_name">Slotify</string>
+    <string name="tagline">Smart Parking Management</string>
 
-    <!-- Splash Screen -->
-    <string name="tagline">Your Spot, Just a Tap Away!</string>
+    <!-- ================================================= -->
+    <!-- AUTH SCREENS -->
+    <!-- ================================================= -->
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="login_subtitle">Enter your phone number to continue</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="phone_hint">9876543210</string>
+    <string name="send_otp">Send OTP</string>
+    <string name="login">Login</string>
+    <string name="change">Change</string>
+    <string name="enter_otp">Enter OTP</string>
+    <string name="otp_hint">000000</string>
+    <string name="no_account">Don t have an account? </string>
+    <string name="signup">Sign Up</string>
+    <string name="have_account">Already have an account? </string>
+    <string name="create_account">Create Account</string>
+    <string name="signup_subtitle">Sign up to get started</string>
+    <string name="full_name">Full Name</string>
+    <string name="name_hint">Enter your name</string>
+    <string name="email">Email</string>
+    <string name="email_hint">user@example.com</string>
 
-    <!-- Login Screen -->
-    <string name="login_title">Welcome Back</string>
-    <string name="email_hint">Email Address</string>
-    <string name="password_hint">Password</string>
-    <string name="login_button">Login</string>
-    <string name="forgot_password">Forgot Password?</string>
-    <string name="no_account">Don\'t have an account? <b>Sign Up</b></string>
+    <!-- ================================================= -->
+    <!-- NAVIGATION -->
+    <!-- ================================================= -->
+    <string name="home">Home</string>
+    <string name="bookings">Bookings</string>
+    <string name="profile">Profile</string>
 
-    <!-- Signup Screen -->
-    <string name="signup_title">Create Account</string>
-    <string name="name_hint">Full Name</string>
-    <string name="phone_hint">Phone Number</string>
-    <string name="confirm_password_hint">Confirm Password</string>
-    <string name="signup_button">Sign Up</string>
-    <string name="have_account">Already have an account? <b>Login</b></string>
+    <!-- ================================================= -->
+    <!-- HOME -->
+    <!-- ================================================= -->
+    <string name="find_parking">Find Parking</string>
+    <string name="scan_qr">Scan QR</string>
+    <string name="my_bookings">My Bookings</string>
+    <string name="quick_book">Quick Book</string>
+    <string name="available_slots">Available Slots</string>
+    <string name="support">Support</string>
+    <string name="find_parking_now">Find Parking Now</string>
 
-    <!-- Home Screen -->
-    <string name="search_hint">Search parking location...</string>
-    <string name="search_button">Search</string>
-    <string name="nearby_parking">Nearby Parking</string>
+    <!-- ================================================= -->
+    <!-- SLOTS / BOOKING -->
+    <!-- ================================================= -->
+    <string name="select_slot">Select Parking Slot</string>
+    <string name="booking_title">Book Parking Slot</string>
+    <string name="select_duration">Select Duration</string>
+    <string name="vehicle_number_hint">Enter vehicle number</string>
+
+    <string name="available">Available</string>
+    <string name="occupied">Occupied</string>
+    <string name="all">All</string>
+    <string name="book_now">Book Now</string>
+    <string name="level">Level</string>
+
+    <!-- ================================================= -->
+    <!-- PAYMENT -->
+    <!-- ================================================= -->
+    <string name="payment">Payment</string>
+    <string name="slot_details">Slot Details</string>
+    <string name="parking_duration">Parking Duration</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="card">Card</string>
+    <string name="upi">UPI</string>
+    <string name="card_number">Card Number</string>
+    <string name="expiry">MM/YY</string>
+    <string name="cvv">CVV</string>
+    <string name="upi_id">UPI ID</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="pay">Pay</string>
+
+    <!-- ================================================= -->
+    <!-- CONFIRMATION -->
+    <!-- ================================================= -->
+    <string name="booking_confirmed">Booking Confirmed!</string>
+    <string name="booking_success_message">Your parking slot has been booked</string>
+    <string name="scan_at_entry">Scan at entry/exit</string>
+    <string name="booking_id">Booking ID</string>
+    <string name="slot">Slot</string>
+    <string name="duration">Duration</string>
+    <string name="start">Start</string>
+    <string name="end">End</string>
+    <string name="total_paid">Total Paid</string>
+    <string name="go_home">Home</string>
+    <string name="view_bookings">View Bookings</string>
+
+    <!-- ================================================= -->
+    <!-- SCANNER -->
+    <!-- ================================================= -->
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="point_camera">Point camera at QR code</string>
+    <string name="scan_again">Scan Again</string>
+
+    <!-- ================================================= -->
+    <!-- PROFILE -->
+    <!-- ================================================= -->
+    <string name="edit_profile">Edit Profile</string>
+    <string name="payment_methods">Payment Methods</string>
+    <string name="notifications">Notifications</string>
+    <string name="help_support">Help &amp; Support</string>
+    <string name="terms_conditions">Terms &amp; Conditions</string>
     <string name="logout">Logout</string>
 
-    <!-- Booking Screen -->
-    <string name="booking_title">Book Your Slot</string>
-    <string name="select_duration">Select Duration</string>
-    <string name="vehicle_number_hint">Vehicle Number</string>
-    <string name="proceed_to_payment">Proceed to Payment</string>
-    <string name="back">Back</string>
+    <!-- ================================================= -->
+    <!-- BOOKINGS -->
+    <!-- ================================================= -->
+    <string name="active">Active</string>
+    <string name="completed">Completed</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="no_bookings">No bookings found</string>
 
-    <!-- Payment Screen -->
-    <string name="payment_title">Payment</string>
-    <string name="card_number_hint">Card Number</string>
-    <string name="expiry_hint">MM/YY</string>
-    <string name="cvv_hint">CVV</string>
-    <string name="card_holder_hint">Cardholder Name</string>
-    <string name="pay_button">Pay Now</string>
-    <string name="price_format">₹%1$.2f/hr</string>
-    <string name="cancel">Cancel</string>
+    <!-- ================================================= -->
+    <!-- ADMIN -->
+    <!-- ================================================= -->
+    <string name="admin_dashboard">Admin Dashboard</string>
+    <string name="locations_management">Locations Management</string>
+    <string name="slots_management">Slots Management</string>
+    <string name="bookings_view">Bookings View</string>
+    <string name="revenue_analytics">Revenue Analytics</string>
+    <string name="users_management">Users Management</string>
+    <string name="add_location">Add Location</string>
+    <string name="add_slot">Add Slot</string>
+    <string name="bulk_add">Bulk Add</string>
+    <string name="edit">Edit</string>
+    <string name="activate">Activate</string>
+    <string name="deactivate">Deactivate</string>
 
-    <!-- Confirmation Screen -->
-    <string name="confirmation_title">Booking Confirmed!</string>
-    <string name="booking_id">Booking ID</string>
-    <string name="scan_qr">Scan this QR code at the entry gate</string>
-    <string name="done">Done</string>
-    <string name="view_directions">View Directions</string>
-
-    <!-- Common -->
+    <!-- ================================================= -->
+    <!-- GENERAL -->
+    <!-- ================================================= -->
     <string name="loading">Loading...</string>
-    <string name="error">Something went wrong</string>
+    <string name="error">Error</string>
+    <string name="success">Success</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="save">Save</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="confirm">Confirm</string>
+    <string name="retry">Retry</string>
+
+    <!-- ================================================= -->
+    <!-- HOME / SEARCH -->
+    <!-- ================================================= -->
+    <string name="search_hint">Search parking location</string>
+    <string name="search_button">Search</string>
+    <string name="nearby_parking">Nearby Parking</string>
+
+    <!-- ================================================= -->
+    <!-- BOOKING -->
+    <!-- ================================================= -->
+    <string name="proceed_to_payment">Proceed to Payment</string>
+
+    <!-- Price formatting -->
+    <string name="price_format">₹%1$s</string>
+
+
+    
+
 </resources>

@@ -1,55 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Slotify"
-        tools:targetApi="31">
+        android:usesCleartextTraffic="true">
 
-        <!-- ✅ Splash Screen (Launcher) -->
+        <!-- Splash Activity -->
         <activity
-            android:name=".SplashScreenActivity"
+            android:name="com.viplavkr.slotify.activities.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.Slotify">
+            android:theme="@style/Theme.Slotify.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- ✅ Login and Signup -->
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SignupActivity"
-            android:exported="false" />
+        <!-- Auth Activities -->
+        <activity android:name="com.viplavkr.slotify.activities.LoginActivity" />
+        <activity android:name="com.viplavkr.slotify.activities.SignupActivity" />
 
-        <!-- ✅ Home and Booking Flow -->
-        <activity
-            android:name=".HomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".BookingActivity"
-            android:exported="false" />
-        <activity
-            android:name=".PaymentActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ConfirmationActivity"
-            android:exported="false" />
+        <!-- User Activities -->
+        <activity android:name="com.viplavkr.slotify.user.activities.MainActivity" />
+        <activity android:name="com.viplavkr.slotify.user.activities.SlotsActivity" />
+        <activity android:name="com.viplavkr.slotify.user.activities.PaymentActivity" />
+        <activity android:name="com.viplavkr.slotify.user.activities.ConfirmationActivity" />
+        <activity android:name="com.viplavkr.slotify.user.activities.ScannerActivity" />
 
-        <!-- ❌ MainActivity removed as launcher -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
+        <!-- Admin Activities -->
+        <activity android:name="com.viplavkr.slotify.admin.activities.AdminDashboardActivity" />
+        <activity android:name="com.viplavkr.slotify.admin.activities.LocationsManagementActivity" />
+        <activity android:name="com.viplavkr.slotify.admin.activities.SlotsManagementActivity" />
+        <activity android:name="com.viplavkr.slotify.admin.activities.BookingsViewActivity" />
+        <activity android:name="com.viplavkr.slotify.admin.activities.RevenueActivity" />
+        <activity android:name="com.viplavkr.slotify.admin.activities.UsersManagementActivity" />
+
 
     </application>
 
