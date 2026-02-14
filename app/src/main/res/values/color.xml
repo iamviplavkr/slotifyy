@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ================================================= -->
+    <!-- CORE BACKGROUNDS -->
+    <!-- ================================================= -->
+    <color name="background">#0A0A0A</color>
+    <color name="background_primary">#0A0A0A</color>
+    <color name="background_secondary">#1A1A1A</color>
+    <color name="background_card">#1A1A1A</color>
+    <color name="background_input">#2A2A2A</color>
+
+    <!-- ================================================= -->
+    <!-- SURFACE -->
+    <!-- ================================================= -->
+    <color name="surface">#1A1A1A</color>
+    <color name="surface_light">#2A2A2A</color>
+
+    <!-- ================================================= -->
+    <!-- PRIMARY / ACCENT (YELLOW) -->
+    <!-- ================================================= -->
+    <color name="primary">#FFD700</color>
+    <color name="primary_dark">#E6C200</color>
+    <color name="primary_light">#FFE44D</color>
+
+    <!-- Aliases for existing XML references -->
+    <color name="accent_yellow">#FFD700</color>
+    <color name="accent_yellow_light">#FFE44D</color>
+    <color name="yellow_overlay">#33FFD700</color>
+
+    <!-- ================================================= -->
+    <!-- TEXT -->
+    <!-- ================================================= -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="text_hint">#666666</color>
+    <color name="text_muted">#888888</color>
+
+    <!-- ================================================= -->
+    <!-- STATUS / FEEDBACK -->
+    <!-- ================================================= -->
+    <color name="success">#4CAF50</color>
+    <color name="success_green">#4CAF50</color>
+    <color name="error">#F44336</color>
+    <color name="warning">#FF9800</color>
+    <color name="info">#2196F3</color>
+
+    <!-- ================================================= -->
+    <!-- BORDERS / DIVIDERS -->
+    <!-- ================================================= -->
+    <color name="border">#333333</color>
+    <color name="border_color">#333333</color>
+    <color name="divider">#2A2A2A</color>
+
+    <!-- ================================================= -->
+    <!-- CHIP -->
+    <!-- ================================================= -->
+    <color name="chip_background">#2A2A2A</color>
+    <color name="chip_selected">#3D3100</color>
+
+    <!-- ================================================= -->
+    <!-- STATUS BADGES -->
+    <!-- ================================================= -->
+    <color name="status_available">#4CAF50</color>
+    <color name="status_occupied">#F44336</color>
+    <color name="status_active">#4CAF50</color>
+    <color name="status_completed">#2196F3</color>
+    <color name="status_cancelled">#F44336</color>
+    <color name="status_inactive">#666666</color>
+
+    <!-- ================================================= -->
+    <!-- UTILITY -->
+    <!-- ================================================= -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+
+    <!-- Text color on yellow buttons -->
+    <color name="text_on_yellow">#000000</color>
+
+    <!-- Bottom navigation -->
+    <color name="nav_item_color">#B0B0B0</color>
+
+    <!-- Chip selector background -->
+    <color name="chip_background_color">@color/chip_background</color>
+
+
+</resources>
