@@ -1,0 +1,17 @@
+# Gradle
+.gradle/
+build/
+
+# Local config
+local.properties
+
+# Firebase
+google-services.json
+firebase-admin.json
+
+# IDE
+.idea/
+*.iml
+
+# Logs
+*.log

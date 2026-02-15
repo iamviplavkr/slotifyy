@@ -1,0 +1,87 @@
+package com.viplavkr.slotify.admin.adapters
+
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.viplavkr.slotify.R
+import com.viplavkr.slotify.common.models.Booking
+import com.viplavkr.slotify.common.models.BookingStatus
+import com.viplavkr.slotify.databinding.ItemAdminBookingBinding
+
+class AdminBookingsAdapter(
+    private val onBookingClick: (Booking) -> Unit
+) : ListAdapter<Booking, AdminBookingsAdapter.AdminBookingViewHolder>(BookingDiffCallback()) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdminBookingViewHolder {
+        val binding = ItemAdminBookingBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return AdminBookingViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: AdminBookingViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+
+    fun updateBookings(bookings: List<Booking>) {
+        submitList(bookings)
+    }
+
+    inner class AdminBookingViewHolder(
+        private val binding: ItemAdminBookingBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.root.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onBookingClick(getItem(position))
+                }
+            }
+        }
+
+        fun bind(booking: Booking) {
+            binding.apply {
+                tvBookingId.text = booking.bookingId
+                tvUserName.text = booking.userName
+                tvUserPhone.text = booking.userPhone
+                tvSlotInfo.text = "${booking.slotNumber} - Level ${booking.level}"
+                tvLocation.text = booking.locationName
+                tvDateTime.text = booking.startTime
+                tvDuration.text = "${booking.duration} hr${if (booking.duration > 1) "s" else ""}"
+                tvAmount.text = "₹${booking.totalAmount.toInt()}"
+                tvPaymentMethod.text = booking.paymentMethod
+
+                // Status badge
+                when (booking.status) {
+                    BookingStatus.ACTIVE -> {
+                        tvStatus.text = "Active"
+                        tvStatus.setBackgroundResource(R.drawable.bg_status_active)
+                    }
+                    BookingStatus.COMPLETED -> {
+                        tvStatus.text = "Completed"
+                        tvStatus.setBackgroundResource(R.drawable.bg_status_completed)
+                    }
+                    BookingStatus.CANCELLED -> {
+                        tvStatus.text = "Cancelled"
+                        tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled)
+                    }
+                }
+            }
+        }
+    }
+
+    class BookingDiffCallback : DiffUtil.ItemCallback<Booking>() {
+        override fun areItemsTheSame(oldItem: Booking, newItem: Booking): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Booking, newItem: Booking): Boolean {
+            return oldItem == newItem
+        }
+    }
+}
