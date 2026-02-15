@@ -132,4 +132,10 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
     }
+
+    private fun saveJwt(token: String) {
+        val prefs = getSharedPreferences("slotify_prefs", MODE_PRIVATE)
+        prefs.edit().putString("jwt_token", token).apply()
+    }
+
 }

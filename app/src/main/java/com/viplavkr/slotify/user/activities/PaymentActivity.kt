@@ -3,16 +3,17 @@ package com.viplavkr.slotify.user.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.viplavkr.slotify.R
 import com.viplavkr.slotify.common.models.ParkingSlot
 import com.viplavkr.slotify.common.utils.Constants
 import com.viplavkr.slotify.common.utils.getCurrentDateTime
 import com.viplavkr.slotify.common.utils.getEndTime
 import com.viplavkr.slotify.common.utils.showToast
+import com.viplavkr.slotify.data.remote.PaymentRequest
+import com.viplavkr.slotify.data.remote.RetrofitClient
 import com.viplavkr.slotify.databinding.ActivityPaymentBinding
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class PaymentActivity : AppCompatActivity() {
@@ -35,16 +36,21 @@ class PaymentActivity : AppCompatActivity() {
             return
         }
 
-        setupToolbar()
+        setupUI()
+    }
+
+    private fun setupUI() {
         setupSlotDetails()
         setupDurationSelector()
         setupPaymentMethods()
-        setupPayButton()
-        updateTotalAmount()
-    }
 
-    private fun setupToolbar() {
         binding.btnBack.setOnClickListener { finish() }
+
+        binding.btnPay.setOnClickListener {
+            processPayment()
+        }
+
+        updateTotalAmount()
     }
 
     private fun setupSlotDetails() {
@@ -58,12 +64,9 @@ class PaymentActivity : AppCompatActivity() {
     }
 
     private fun setupDurationSelector() {
-        updateDurationDisplay()
-
         binding.btnDecrease.setOnClickListener {
             if (duration > Constants.MIN_DURATION) {
                 duration--
-                updateDurationDisplay()
                 updateTotalAmount()
             }
         }
@@ -71,40 +74,18 @@ class PaymentActivity : AppCompatActivity() {
         binding.btnIncrease.setOnClickListener {
             if (duration < Constants.MAX_DURATION) {
                 duration++
-                updateDurationDisplay()
                 updateTotalAmount()
             }
         }
     }
 
-    private fun updateDurationDisplay() {
-        binding.tvDuration.text = "$duration hr${if (duration > 1) "s" else ""}"
-        binding.tvEndTime.text = getEndTime(duration)
-    }
-
     private fun setupPaymentMethods() {
-        binding.cardCard.isSelected = true
-
         binding.cardCard.setOnClickListener {
             selectedPaymentMethod = "CARD"
-            binding.cardCard.isSelected = true
-            binding.cardUpi.isSelected = false
-            binding.cardDetailsContainer.visibility = View.VISIBLE
-            binding.upiDetailsContainer.visibility = View.GONE
         }
 
         binding.cardUpi.setOnClickListener {
             selectedPaymentMethod = "UPI"
-            binding.cardUpi.isSelected = true
-            binding.cardCard.isSelected = false
-            binding.cardDetailsContainer.visibility = View.GONE
-            binding.upiDetailsContainer.visibility = View.VISIBLE
-        }
-    }
-
-    private fun setupPayButton() {
-        binding.btnPay.setOnClickListener {
-            processPayment()
         }
     }
 
@@ -114,60 +95,70 @@ class PaymentActivity : AppCompatActivity() {
         binding.btnPay.text = "Pay ₹${total.toInt()}"
     }
 
+    // ====================================
+    // 🔥 REAL BACKEND PAYMENT CALL
+    // ====================================
     private fun processPayment() {
-        // Validate payment details
-        if (selectedPaymentMethod == "CARD") {
-            val cardNumber = binding.etCardNumber.text.toString().trim()
-            val expiry = binding.etExpiry.text.toString().trim()
-            val cvv = binding.etCvv.text.toString().trim()
 
-            if (cardNumber.length < 16) {
-                showToast("Please enter valid card number")
-                return
-            }
-            if (expiry.length < 5) {
-                showToast("Please enter valid expiry date")
-                return
-            }
-            if (cvv.length < 3) {
-                showToast("Please enter valid CVV")
-                return
-            }
-        } else {
-            val upiId = binding.etUpiId.text.toString().trim()
-            if (!upiId.contains("@")) {
-                showToast("Please enter valid UPI ID")
-                return
-            }
+        val total = (slot?.pricePerHour ?: 0.0) * duration
+
+        val prefs = getSharedPreferences("slotify_prefs", MODE_PRIVATE)
+        val token = prefs.getString("jwt_token", null)
+
+        if (token == null) {
+            Toast.makeText(this, "Login required", Toast.LENGTH_SHORT).show()
+            return
         }
+
+        val request = PaymentRequest(
+            bookingId = 1, // replace with real booking ID
+            amount = total,
+            paymentMode = selectedPaymentMethod
+        )
 
         showLoading(true)
 
-        // Mock payment processing
         lifecycleScope.launch {
-            delay(Constants.PAYMENT_DELAY)
+            try {
+                val response = RetrofitClient.paymentApi
+                    .createPayment("Bearer $token", request)
 
-            showLoading(false)
+                showLoading(false)
 
-            // Navigate to confirmation
-            val totalAmount = (slot?.pricePerHour ?: 0.0) * duration
-            val bookingId = "BK${System.currentTimeMillis().toString().takeLast(8)}"
+                if (response.isSuccessful) {
 
-            val intent = Intent(this@PaymentActivity, ConfirmationActivity::class.java).apply {
-                putExtra(Constants.EXTRA_SLOT, slot)
-                putExtra(Constants.EXTRA_DURATION, duration)
-                putExtra(Constants.EXTRA_TOTAL_AMOUNT, totalAmount)
-                putExtra(Constants.EXTRA_PAYMENT_METHOD, selectedPaymentMethod)
-                putExtra(Constants.EXTRA_BOOKING_ID, bookingId)
+                    val bookingId =
+                        "BK${System.currentTimeMillis().toString().takeLast(8)}"
+
+                    val intent =
+                        Intent(this@PaymentActivity, ConfirmationActivity::class.java).apply {
+                            putExtra(Constants.EXTRA_SLOT, slot)
+                            putExtra(Constants.EXTRA_DURATION, duration)
+                            putExtra(Constants.EXTRA_TOTAL_AMOUNT, total)
+                            putExtra(Constants.EXTRA_PAYMENT_METHOD, selectedPaymentMethod)
+                            putExtra(Constants.EXTRA_BOOKING_ID, bookingId)
+                        }
+
+                    startActivity(intent)
+                    finish()
+
+                } else {
+                    Toast.makeText(
+                        this@PaymentActivity,
+                        "Payment Failed",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: Exception) {
+                showLoading(false)
+                e.printStackTrace()
             }
-            startActivity(intent)
-            finish()
         }
     }
 
     private fun showLoading(show: Boolean) {
         binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
         binding.btnPay.isEnabled = !show
-        binding.btnPay.text = if (show) "Processing..." else "Pay ₹${((slot?.pricePerHour ?: 0.0) * duration).toInt()}"
     }
 }
