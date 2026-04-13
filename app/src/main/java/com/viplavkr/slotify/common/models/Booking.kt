@@ -1,38 +1,63 @@
 package com.viplavkr.slotify.common.models
 
-import java.io.Serializable
+import java.util.UUID
 
+/**
+ * Booking status enum (type-safe)
+ */
+
+
+/**
+ * Core booking entity
+ */
 data class Booking(
-    val id: String,
-    val bookingId: String,
+    val id: String = UUID.randomUUID().toString(),
     val userId: String,
-    val userName: String = "",
-    val userPhone: String = "",
+    val userName: String,
     val slotId: String,
     val slotNumber: String,
-    val level: String,
-    val locationName: String = "",
-    val startTime: String,
-    val endTime: String,
-    val duration: Int,
+    val locationId: String,
+    val locationName: String,
+    val vehicleType: String,
+    val startTime: Long,
+    val endTime: Long,
     val totalAmount: Double,
-    val status: BookingStatus = BookingStatus.ACTIVE,
-    val paymentMethod: String = "CARD",
-    val createdAt: String = ""
-) : Serializable
 
-enum class BookingStatus {
-    ACTIVE,
-    COMPLETED,
-    CANCELLED;
+    var status: BookingStatus = BookingStatus.PENDING,
 
-    companion object {
-        fun fromString(value: String): BookingStatus {
-            return when (value.uppercase()) {
-                "COMPLETED" -> COMPLETED
-                "CANCELLED" -> CANCELLED
-                else -> ACTIVE
-            }
-        }
+    val lockedAt: Long? = null,
+    val confirmedAt: Long? = null,
+    val completedAt: Long? = null,
+    val paymentMethod: String? = null,
+    val transactionId: String? = null,
+
+    val createdAt: Long = System.currentTimeMillis()
+
+) : java.io.Serializable {
+
+    fun isLockExpired(): Boolean {
+        if (status != BookingStatus.LOCKED || lockedAt == null) return false
+        return System.currentTimeMillis() - lockedAt > 5 * 60 * 1000L
+    }
+
+    fun isCurrentlyActive(): Boolean {
+        val now = System.currentTimeMillis()
+        return status == BookingStatus.CONFIRMED && now in startTime..endTime
+    }
+
+    fun getDurationHours(): Int {
+        val diffMs = endTime - startTime
+        return ((diffMs + 3_599_999) / 3_600_000).toInt()
+    }
+
+    fun getStatusDisplay(): String = when (status) {
+        BookingStatus.PENDING -> "Pending"
+        BookingStatus.LOCKED -> "Reserved (Payment Pending)"
+        BookingStatus.CONFIRMED -> if (isCurrentlyActive()) "Active" else "Confirmed"
+        BookingStatus.ACTIVE -> "Active"
+        BookingStatus.COMPLETED -> "Completed"
+        BookingStatus.CANCELLED -> "Cancelled"
+        BookingStatus.EXPIRED -> "Expired"
     }
 }
+

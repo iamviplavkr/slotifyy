@@ -31,4 +31,11 @@ object Constants {
     // Map configuration
     const val DEFAULT_ZOOM = 15f
     const val MAP_ANIMATION_DURATION = 1000
+
+    object Constants {
+
+        // existing constants...
+
+        const val SPLASH_DELAY = 1500L   // 1.5 seconds
+    }
 }

@@ -1,87 +1,61 @@
 package com.viplavkr.slotify.admin.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import android.widget.Button
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.viplavkr.slotify.R
 import com.viplavkr.slotify.common.models.Booking
 import com.viplavkr.slotify.common.models.BookingStatus
-import com.viplavkr.slotify.databinding.ItemAdminBookingBinding
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class AdminBookingsAdapter(
-    private val onBookingClick: (Booking) -> Unit
-) : ListAdapter<Booking, AdminBookingsAdapter.AdminBookingViewHolder>(BookingDiffCallback()) {
+    private val bookings: List<Booking>,
+    private val onComplete: (Booking) -> Unit
+) : RecyclerView.Adapter<AdminBookingsAdapter.VH>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdminBookingViewHolder {
-        val binding = ItemAdminBookingBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return AdminBookingViewHolder(binding)
+    private val dateFormat = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())
+
+    inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val tvUser: TextView = itemView.findViewById(R.id.tvAdminBookingUser)
+        val tvSlot: TextView = itemView.findViewById(R.id.tvAdminBookingSlot)
+        val tvTime: TextView = itemView.findViewById(R.id.tvAdminBookingTime)
+        val tvStatus: TextView = itemView.findViewById(R.id.tvAdminBookingStatus)
+        val tvAmount: TextView = itemView.findViewById(R.id.tvAdminBookingAmount)
+        val btnComplete: Button = itemView.findViewById(R.id.btnAdminComplete)
     }
 
-    override fun onBindViewHolder(holder: AdminBookingViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_admin_booking, parent, false)
+        return VH(view)
     }
 
-    fun updateBookings(bookings: List<Booking>) {
-        submitList(bookings)
-    }
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        val b = bookings[position]
+        holder.tvUser.text = b.userName
+        holder.tvSlot.text = "${b.slotNumber} • ${b.locationName}"
+        holder.tvTime.text = "${dateFormat.format(b.startTime)} → ${dateFormat.format(b.endTime)}"
+        holder.tvAmount.text = "₹${b.totalAmount.toInt()}"
+        holder.tvStatus.text = b.getStatusDisplay()
 
-    inner class AdminBookingViewHolder(
-        private val binding: ItemAdminBookingBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
-
-        init {
-            binding.root.setOnClickListener {
-                val position = adapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    onBookingClick(getItem(position))
-                }
-            }
+        val color = when (b.status) {
+            BookingStatus.CONFIRMED, BookingStatus.ACTIVE -> R.color.status_available
+            BookingStatus.COMPLETED -> R.color.status_completed
+            BookingStatus.CANCELLED -> R.color.status_cancelled
+            BookingStatus.LOCKED -> R.color.status_locked
+            else -> R.color.text_secondary
         }
+        holder.tvStatus.setTextColor(holder.itemView.context.getColor(color))
 
-        fun bind(booking: Booking) {
-            binding.apply {
-                tvBookingId.text = booking.bookingId
-                tvUserName.text = booking.userName
-                tvUserPhone.text = booking.userPhone
-                tvSlotInfo.text = "${booking.slotNumber} - Level ${booking.level}"
-                tvLocation.text = booking.locationName
-                tvDateTime.text = booking.startTime
-                tvDuration.text = "${booking.duration} hr${if (booking.duration > 1) "s" else ""}"
-                tvAmount.text = "₹${booking.totalAmount.toInt()}"
-                tvPaymentMethod.text = booking.paymentMethod
-
-                // Status badge
-                when (booking.status) {
-                    BookingStatus.ACTIVE -> {
-                        tvStatus.text = "Active"
-                        tvStatus.setBackgroundResource(R.drawable.bg_status_active)
-                    }
-                    BookingStatus.COMPLETED -> {
-                        tvStatus.text = "Completed"
-                        tvStatus.setBackgroundResource(R.drawable.bg_status_completed)
-                    }
-                    BookingStatus.CANCELLED -> {
-                        tvStatus.text = "Cancelled"
-                        tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled)
-                    }
-                }
-            }
-        }
+        val canComplete = b.status in listOf(BookingStatus.CONFIRMED, BookingStatus.ACTIVE)
+        holder.btnComplete.visibility = if (canComplete) View.VISIBLE else View.GONE
+        holder.btnComplete.setOnClickListener { onComplete(b) }
     }
 
-    class BookingDiffCallback : DiffUtil.ItemCallback<Booking>() {
-        override fun areItemsTheSame(oldItem: Booking, newItem: Booking): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: Booking, newItem: Booking): Boolean {
-            return oldItem == newItem
-        }
-    }
+    override fun getItemCount() = bookings.size
 }
+

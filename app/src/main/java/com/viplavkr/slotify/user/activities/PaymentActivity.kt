@@ -1,164 +1,171 @@
 package com.viplavkr.slotify.user.activities
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.view.View
-import android.widget.Toast
+import android.os.CountDownTimer
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.viplavkr.slotify.common.models.ParkingSlot
+import com.viplavkr.slotify.R
+import com.viplavkr.slotify.common.data.MockParkingRepository
+import com.viplavkr.slotify.common.models.Booking
 import com.viplavkr.slotify.common.utils.Constants
-import com.viplavkr.slotify.common.utils.getCurrentDateTime
-import com.viplavkr.slotify.common.utils.getEndTime
-import com.viplavkr.slotify.common.utils.showToast
-import com.viplavkr.slotify.data.remote.PaymentRequest
-import com.viplavkr.slotify.data.remote.RetrofitClient
-import com.viplavkr.slotify.databinding.ActivityPaymentBinding
-import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PaymentActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityPaymentBinding
-    private var slot: ParkingSlot? = null
-    private var duration = Constants.DEFAULT_DURATION
-    private var selectedPaymentMethod = "CARD"
+    private lateinit var booking: Booking
+    private var countDownTimer: CountDownTimer? = null
+
+    // Views
+    private lateinit var tvSlotInfo: TextView
+    private lateinit var tvAmount: TextView
+    private lateinit var tvTimeRange: TextView
+    private lateinit var tvCountdown: TextView
+    private lateinit var rgPaymentMethod: RadioGroup
+    private lateinit var rbUpi: RadioButton
+    private lateinit var rbCard: RadioButton
+    private lateinit var btnPay: Button
+    private lateinit var ivBack: ImageView
+
+    private val dateFormat = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityPaymentBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_payment)
 
-        slot = intent.getSerializableExtra(Constants.EXTRA_SLOT) as? ParkingSlot
+        // Get booking safely
+        booking = intent.getSerializableExtra(Constants.EXTRA_BOOKING) as? Booking
+            ?: run {
+                Toast.makeText(this, "Invalid booking", Toast.LENGTH_SHORT).show()
+                finish()
+                return
+            }
 
-        if (slot == null) {
-            showToast("Error loading slot details")
-            finish()
-            return
-        }
-
-        setupUI()
-    }
-
-    private fun setupUI() {
-        setupSlotDetails()
-        setupDurationSelector()
+        initViews()
+        populateBookingDetails()
         setupPaymentMethods()
-
-        binding.btnBack.setOnClickListener { finish() }
-
-        binding.btnPay.setOnClickListener {
-            processPayment()
-        }
-
-        updateTotalAmount()
+        startCountdown()
     }
 
-    private fun setupSlotDetails() {
-        slot?.let {
-            binding.tvSlotNumber.text = it.slotNumber
-            binding.tvLevel.text = "Level ${it.level}"
-            binding.tvSlotType.text = it.type.name
-            binding.tvPricePerHour.text = "₹${it.pricePerHour.toInt()}/hr"
-            binding.tvStartTime.text = getCurrentDateTime()
+    private fun initViews() {
+        tvSlotInfo = findViewById(R.id.tvSlotInfo)
+        tvAmount = findViewById(R.id.tvAmount)
+        tvTimeRange = findViewById(R.id.tvTimeRange)
+        tvCountdown = findViewById(R.id.tvCountdown)
+
+        rgPaymentMethod = findViewById(R.id.rgPaymentMethod)
+        rbUpi = findViewById(R.id.rbUpi)
+        rbCard = findViewById(R.id.rbCard)
+
+        btnPay = findViewById(R.id.btnPay)
+        ivBack = findViewById(R.id.ivBack)
+
+        ivBack.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
         }
     }
 
-    private fun setupDurationSelector() {
-        binding.btnDecrease.setOnClickListener {
-            if (duration > Constants.MIN_DURATION) {
-                duration--
-                updateTotalAmount()
-            }
-        }
+    private fun populateBookingDetails() {
+        tvSlotInfo.text = "${booking.slotNumber} • ${booking.locationName}"
+        tvAmount.text = "₹${booking.totalAmount.toInt()}"
+        tvTimeRange.text =
+            "${dateFormat.format(booking.startTime)} → ${dateFormat.format(booking.endTime)}"
 
-        binding.btnIncrease.setOnClickListener {
-            if (duration < Constants.MAX_DURATION) {
-                duration++
-                updateTotalAmount()
-            }
-        }
+        updateButtonText()
     }
 
     private fun setupPaymentMethods() {
-        binding.cardCard.setOnClickListener {
-            selectedPaymentMethod = "CARD"
+        rgPaymentMethod.setOnCheckedChangeListener { _, _ ->
+            updateButtonText()
         }
 
-        binding.cardUpi.setOnClickListener {
-            selectedPaymentMethod = "UPI"
+        btnPay.setOnClickListener {
+            processPayment()
         }
     }
 
-    private fun updateTotalAmount() {
-        val total = (slot?.pricePerHour ?: 0.0) * duration
-        binding.tvTotalAmount.text = "₹${total.toInt()}"
-        binding.btnPay.text = "Pay ₹${total.toInt()}"
-    }
-
-    // ====================================
-    // 🔥 REAL BACKEND PAYMENT CALL
-    // ====================================
     private fun processPayment() {
-
-        val total = (slot?.pricePerHour ?: 0.0) * duration
-
-        val prefs = getSharedPreferences("slotify_prefs", MODE_PRIVATE)
-        val token = prefs.getString("jwt_token", null)
-
-        if (token == null) {
-            Toast.makeText(this, "Login required", Toast.LENGTH_SHORT).show()
-            return
+        when {
+            rbUpi.isChecked -> processUpi()
+            rbCard.isChecked -> simulateSuccess("CARD")
+            else -> Toast.makeText(this, "Select payment method", Toast.LENGTH_SHORT).show()
         }
+    }
 
-        val request = PaymentRequest(
-            bookingId = 1, // replace with real booking ID
-            amount = total,
-            paymentMode = selectedPaymentMethod
+    private fun processUpi() {
+        val uri = Uri.parse(
+            "upi://pay?pa=${Constants.DEMO_UPI_ID}&pn=Slotify&am=${booking.totalAmount}&cu=INR"
         )
 
-        showLoading(true)
+        val intent = Intent(Intent.ACTION_VIEW, uri)
 
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.paymentApi
-                    .createPayment("Bearer $token", request)
-
-                showLoading(false)
-
-                if (response.isSuccessful) {
-
-                    val bookingId =
-                        "BK${System.currentTimeMillis().toString().takeLast(8)}"
-
-                    val intent =
-                        Intent(this@PaymentActivity, ConfirmationActivity::class.java).apply {
-                            putExtra(Constants.EXTRA_SLOT, slot)
-                            putExtra(Constants.EXTRA_DURATION, duration)
-                            putExtra(Constants.EXTRA_TOTAL_AMOUNT, total)
-                            putExtra(Constants.EXTRA_PAYMENT_METHOD, selectedPaymentMethod)
-                            putExtra(Constants.EXTRA_BOOKING_ID, bookingId)
-                        }
-
-                    startActivity(intent)
-                    finish()
-
-                } else {
-                    Toast.makeText(
-                        this@PaymentActivity,
-                        "Payment Failed",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-            } catch (e: Exception) {
-                showLoading(false)
-                e.printStackTrace()
-            }
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            simulateSuccess("UPI")
         }
     }
 
-    private fun showLoading(show: Boolean) {
-        binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
-        binding.btnPay.isEnabled = !show
+    private fun simulateSuccess(method: String) {
+        btnPay.isEnabled = false
+
+        btnPay.postDelayed({
+
+            val txnId = "TXN${UUID.randomUUID().toString().take(6)}"
+
+            val success = MockParkingRepository.confirmBooking(
+                booking.id,
+                method,
+                txnId
+            )
+
+            countDownTimer?.cancel()
+
+            if (success) {
+                val intent = Intent(this, ConfirmationActivity::class.java)
+                intent.putExtra(Constants.EXTRA_BOOKING_ID, booking.id)
+                startActivity(intent)
+                finish()
+            } else {
+                Toast.makeText(this, "Payment failed", Toast.LENGTH_SHORT).show()
+                btnPay.isEnabled = true
+            }
+
+        }, 1500)
+    }
+
+    private fun updateButtonText() {
+        val method = when {
+            rbCard.isChecked -> "Card"
+            rbUpi.isChecked -> "UPI"
+            else -> "UPI"
+        }
+
+        btnPay.text = "Pay ₹${booking.totalAmount.toInt()} via $method"
+    }
+
+    private fun startCountdown() {
+        val remaining = Constants.SLOT_LOCK_DURATION_MS
+
+        countDownTimer = object : CountDownTimer(remaining, 1000) {
+
+            override fun onTick(ms: Long) {
+                val minutes = ms / 60000
+                val seconds = (ms % 60000) / 1000
+                tvCountdown.text = "Slot reserved for $minutes:${String.format("%02d", seconds)}"
+            }
+
+            override fun onFinish() {
+                Toast.makeText(this@PaymentActivity, "Slot expired", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }.start()
+    }
+
+    override fun onDestroy() {
+        countDownTimer?.cancel()
+        super.onDestroy()
     }
 }

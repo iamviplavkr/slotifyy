@@ -1,6 +1,5 @@
 package com.viplavkr.slotify.activities
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -13,31 +12,36 @@ import com.viplavkr.slotify.common.models.Role
 import com.viplavkr.slotify.common.utils.Constants
 import com.viplavkr.slotify.user.activities.MainActivity
 
-@SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
+
+    private lateinit var authManager: AuthManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // Initialize AuthManager
-        AuthManager.init(this)
+        // ✅ FIX 1: Initialize authManager
+        authManager = AuthManager(this)
 
-        // Navigate after splash delay
         Handler(Looper.getMainLooper()).postDelayed({
             navigateToNextScreen()
         }, Constants.SPLASH_DELAY)
     }
 
     private fun navigateToNextScreen() {
-        val intent = if (AuthManager.isLoggedIn()) {
-            // User is logged in, check role
-            when (AuthManager.getRole()) {
+
+        val intent = if (authManager.isLoggedIn()) {
+
+            // ✅ FIX 2: 'when' (small w)
+            val role = authManager.getUserRole()
+
+             when (role) {
                 Role.ADMIN -> Intent(this, AdminDashboardActivity::class.java)
                 Role.USER -> Intent(this, MainActivity::class.java)
+                else -> Intent(this, LoginActivity::class.java)
             }
+
         } else {
-            // User is not logged in, go to login
             Intent(this, LoginActivity::class.java)
         }
 
@@ -45,3 +49,5 @@ class SplashActivity : AppCompatActivity() {
         finish()
     }
 }
+
+

@@ -2,98 +2,114 @@ package com.viplavkr.slotify.common.auth
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Base64
 import com.viplavkr.slotify.common.models.Role
 import com.viplavkr.slotify.common.models.User
-import org.json.JSONObject
+import com.viplavkr.slotify.common.utils.Constants
+import java.util.UUID
 
-object AuthManager {
-    private const val PREF_NAME = "slotify_auth"
-    private const val KEY_TOKEN = "jwt_token"
-    private const val KEY_USER_ID = "user_id"
-    private const val KEY_USER_NAME = "user_name"
-    private const val KEY_USER_PHONE = "user_phone"
-    private const val KEY_USER_EMAIL = "user_email"
-    private const val KEY_USER_ROLE = "user_role"
-    private const val KEY_IS_LOGGED_IN = "is_logged_in"
+/**
+ * Manages authentication state using SharedPreferences.
+ * Handles login persistence, session tokens, and role-based access.
+ *
+ * Usage:
+ *   val auth = AuthManager(context)
+ *   auth.saveSession(user)
+ *   if (auth.isLoggedIn()) { ... }
+ *   val role = auth.getUserRole()
+ */
+class AuthManager(context: Context) {
 
-    private lateinit var prefs: SharedPreferences
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE)
 
-    fun init(context: Context) {
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-    }
+    // ── Session Management ──────────────────────────────────────────
 
-    fun saveToken(token: String) {
-        prefs.edit().putString(KEY_TOKEN, token).apply()
-    }
+    /**
+     * Persists the user session after successful login/signup.
+     * Generates a mock auth token with a 24-hour expiry.
+     */
+    fun saveSession(user: User) {
+        val token = "slotify_${UUID.randomUUID()}"
+        val expiry = System.currentTimeMillis() + Constants.TOKEN_VALIDITY_MS
 
-    fun getToken(): String? {
-        return prefs.getString(KEY_TOKEN, null)
-    }
-
-    fun saveUser(user: User) {
         prefs.edit().apply {
-            putString(KEY_USER_ID, user.id)
-            putString(KEY_USER_NAME, user.name)
-            putString(KEY_USER_PHONE, user.phone)
-            putString(KEY_USER_EMAIL, user.email)
-            putString(KEY_USER_ROLE, user.role)
-            putBoolean(KEY_IS_LOGGED_IN, true)
+            putString(Constants.KEY_USER_ID, user.id)
+            putString(Constants.KEY_USER_NAME, user.name)
+            putString(Constants.KEY_USER_EMAIL, user.email)
+            putString(Constants.KEY_USER_PHONE, user.phone)
+            putString(Constants.KEY_USER_ROLE, user.role.name)
+            putString(Constants.KEY_AUTH_TOKEN, token)
+            putLong(Constants.KEY_TOKEN_EXPIRY, expiry)
+            putBoolean(Constants.KEY_IS_LOGGED_IN, true)
             apply()
         }
     }
 
-    fun getUser(): User? {
+    /**
+     * Returns true if user has an active, non-expired session.
+     */
+    fun isLoggedIn(): Boolean {
+        val loggedIn = prefs.getBoolean(Constants.KEY_IS_LOGGED_IN, false)
+        if (!loggedIn) return false
+
+        // Check token expiry
+        val expiry = prefs.getLong(Constants.KEY_TOKEN_EXPIRY, 0L)
+        if (System.currentTimeMillis() > expiry) {
+            clearSession()
+            return false
+        }
+        return true
+    }
+
+    /**
+     * Returns the current user's Role, or null if not logged in.
+     */
+    fun getUserRole(): Role? {
+        val roleStr = prefs.getString(Constants.KEY_USER_ROLE, null) ?: return null
+        return try {
+            Role.valueOf(roleStr)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    /**
+     * Returns the stored auth token for API calls.
+     */
+    fun getAuthToken(): String? {
+        return prefs.getString(Constants.KEY_AUTH_TOKEN, null)
+    }
+
+    /**
+     * Reconstructs the current User object from stored preferences.
+     */
+    fun getCurrentUser(): User? {
         if (!isLoggedIn()) return null
+
+        val id = prefs.getString(Constants.KEY_USER_ID, null) ?: return null
+        val name = prefs.getString(Constants.KEY_USER_NAME, "") ?: ""
+        val email = prefs.getString(Constants.KEY_USER_EMAIL, "") ?: ""
+        val phone = prefs.getString(Constants.KEY_USER_PHONE, "") ?: ""
+        val role = getUserRole() ?: Role.USER
+
         return User(
-            id = prefs.getString(KEY_USER_ID, "") ?: "",
-            name = prefs.getString(KEY_USER_NAME, "") ?: "",
-            phone = prefs.getString(KEY_USER_PHONE, "") ?: "",
-            email = prefs.getString(KEY_USER_EMAIL, "") ?: "",
-            role = prefs.getString(KEY_USER_ROLE, "USER") ?: "USER"
+            id = id,
+            name = name,
+            email = email,
+            phone = phone,
+            password = "", // Never stored in prefs
+        role = role
         )
     }
 
-    fun getRole(): Role {
-        val roleString = prefs.getString(KEY_USER_ROLE, "USER") ?: "USER"
-        return Role.fromString(roleString)
-    }
+    fun getUserId(): String? = prefs.getString(Constants.KEY_USER_ID, null)
+    fun getUserName(): String? = prefs.getString(Constants.KEY_USER_NAME, null)
+    fun getUserEmail(): String? = prefs.getString(Constants.KEY_USER_EMAIL, null)
 
-    fun isLoggedIn(): Boolean {
-        return prefs.getBoolean(KEY_IS_LOGGED_IN, false)
-    }
-
-    fun logout() {
+    /**
+     * Wipes all session data. Used on logout or token expiry.
+     */
+    fun clearSession() {
         prefs.edit().clear().apply()
-    }
-
-    fun parseJwtRole(token: String): Role {
-        return try {
-            val parts = token.split(".")
-            if (parts.size != 3) return Role.USER
-
-            val payload = String(Base64.decode(parts[1], Base64.URL_SAFE))
-            val json = JSONObject(payload)
-            val role = json.optString("role", "USER")
-            Role.fromString(role)
-        } catch (e: Exception) {
-            Role.USER
-        }
-    }
-
-    fun isTokenValid(): Boolean {
-        val token = getToken() ?: return false
-        return try {
-            val parts = token.split(".")
-            if (parts.size != 3) return false
-
-            val payload = String(Base64.decode(parts[1], Base64.URL_SAFE))
-            val json = JSONObject(payload)
-            val exp = json.optLong("exp", 0)
-            val currentTime = System.currentTimeMillis() / 1000
-            exp > currentTime
-        } catch (e: Exception) {
-            false
-        }
     }
 }

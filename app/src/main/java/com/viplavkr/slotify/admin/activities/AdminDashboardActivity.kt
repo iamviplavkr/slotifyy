@@ -2,113 +2,119 @@ package com.viplavkr.slotify.admin.activities
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
+import android.os.Handler
+import android.os.Looper
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import androidx.cardview.widget.CardView
 import com.viplavkr.slotify.R
 import com.viplavkr.slotify.activities.LoginActivity
 import com.viplavkr.slotify.common.auth.AuthManager
-import com.viplavkr.slotify.databinding.ActivityAdminDashboardBinding
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.viplavkr.slotify.common.data.MockDataRepository
+import com.viplavkr.slotify.common.data.MockParkingRepository
+import com.viplavkr.slotify.user.activities.ScannerActivity
 
 class AdminDashboardActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityAdminDashboardBinding
+    private lateinit var authManager: AuthManager
+    private val handler = Handler(Looper.getMainLooper())
+
+    private lateinit var tvAdminName: TextView
+    private lateinit var tvTotalBookings: TextView
+    private lateinit var tvActiveBookings: TextView
+    private lateinit var tvTotalRevenue: TextView
+    private lateinit var tvTotalUsers: TextView
+    private lateinit var tvTodayBookings: TextView
+
+    private lateinit var cardBookings: CardView
+    private lateinit var cardSlots: CardView
+    private lateinit var cardUsers: CardView
+    private lateinit var cardLocations: CardView
+    private lateinit var cardRevenue: CardView
+    private lateinit var cardScanner: CardView
+    private lateinit var cardLogout: CardView
+
+    private val refreshRunnable = object : Runnable {
+        override fun run() {
+            updateStats()
+            handler.postDelayed(this, 10000)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityAdminDashboardBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_admin_dashboard)
 
-        setupHeader()
-        setupDashboardStats()
-        setupMenuItems()
-        loadDashboardData()
+        authManager = AuthManager(this)
+
+        initViews()
+        setupNavigation()
+        updateStats()
     }
 
-    private fun setupHeader() {
-        val user = AuthManager.getUser()
-        binding.tvAdminName.text = user?.name ?: "Admin"
-        binding.tvAdminEmail.text = user?.email ?: "admin@slotify.com"
+    private fun initViews() {
+        tvAdminName = findViewById(R.id.tvAdminName)
+        tvTotalBookings = findViewById(R.id.tvTotalBookings)
+        tvActiveBookings = findViewById(R.id.tvActiveBookings)
+        tvTotalRevenue = findViewById(R.id.tvTotalRevenue)
+        tvTotalUsers = findViewById(R.id.tvTotalUsers)
+        tvTodayBookings = findViewById(R.id.tvTodayBookings)
 
-        binding.btnLogout.setOnClickListener {
-            showLogoutDialog()
-        }
+        cardBookings = findViewById(R.id.cardBookings)
+        cardSlots = findViewById(R.id.cardSlots)
+        cardUsers = findViewById(R.id.cardUsers)
+        cardLocations = findViewById(R.id.cardLocations)
+        cardRevenue = findViewById(R.id.cardRevenue)
+        cardScanner = findViewById(R.id.cardScanner) // ✅ FIXED
+        cardLogout = findViewById(R.id.cardLogout)
+
+        tvAdminName.text = "Hello, ${authManager.getUserName() ?: "Admin"}"
     }
 
-    private fun setupDashboardStats() {
-        // Initial loading state
-        binding.tvTotalLocations.text = "--"
-        binding.tvTotalSlots.text = "--"
-        binding.tvActiveBookings.text = "--"
-        binding.tvTodayRevenue.text = "--"
-    }
-
-    private fun setupMenuItems() {
-        // Locations Management
-        binding.cardLocations.setOnClickListener {
-            startActivity(Intent(this, LocationsManagementActivity::class.java))
-        }
-
-        // Slots Management
-        binding.cardSlots.setOnClickListener {
-            startActivity(Intent(this, SlotsManagementActivity::class.java))
-        }
-
-        // Bookings View
-        binding.cardBookings.setOnClickListener {
+    private fun setupNavigation() {
+        cardBookings.setOnClickListener {
             startActivity(Intent(this, BookingsViewActivity::class.java))
         }
-
-        // Revenue
-        binding.cardRevenue.setOnClickListener {
-            startActivity(Intent(this, RevenueActivity::class.java))
+        cardSlots.setOnClickListener {
+            startActivity(Intent(this, SlotsManagementActivity::class.java))
         }
-
-        // Users Management
-        binding.cardUsers.setOnClickListener {
+        cardUsers.setOnClickListener {
             startActivity(Intent(this, UsersManagementActivity::class.java))
         }
-    }
-
-    private fun loadDashboardData() {
-        lifecycleScope.launch {
-            // Simulate loading
-            delay(500)
-
-            // Mock dashboard data
-            binding.tvTotalLocations.text = "5"
-            binding.tvTotalSlots.text = "248"
-            binding.tvActiveBookings.text = "42"
-            binding.tvTodayRevenue.text = "₹12,450"
+        cardLocations.setOnClickListener {
+            startActivity(Intent(this, LocationsManagementActivity::class.java))
+        }
+        cardRevenue.setOnClickListener {
+            startActivity(Intent(this, RevenueActivity::class.java))
+        }
+        cardScanner.setOnClickListener {
+            startActivity(Intent(this, ScannerActivity::class.java))
+        }
+        cardLogout.setOnClickListener {
+            authManager.clearSession()
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
         }
     }
 
-    private fun showLogoutDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Logout")
-            .setMessage("Are you sure you want to logout?")
-            .setPositiveButton("Logout") { _, _ ->
-                performLogout()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun performLogout() {
-        AuthManager.logout()
-
-        val intent = Intent(this, LoginActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        startActivity(intent)
-        finish()
+    private fun updateStats() {
+        val bookings = MockParkingRepository.getAllBookings()
+        tvTotalBookings.text = bookings.size.toString()
+        tvActiveBookings.text = MockParkingRepository.getActiveBookingsCount().toString()
+        tvTotalRevenue.text = "₹${MockParkingRepository.getTotalRevenue().toInt()}"
+        tvTotalUsers.text = MockDataRepository.getActiveUserCount().toString()
+        tvTodayBookings.text = MockParkingRepository.getTodayBookingsCount().toString()
     }
 
     override fun onResume() {
         super.onResume()
-        // Refresh data when returning to dashboard
-        loadDashboardData()
+        handler.post(refreshRunnable)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        handler.removeCallbacks(refreshRunnable)
     }
 }

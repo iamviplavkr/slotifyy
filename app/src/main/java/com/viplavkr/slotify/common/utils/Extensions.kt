@@ -1,76 +1,72 @@
 package com.viplavkr.slotify.common.utils
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.view.View
-import android.widget.Toast
-import java.text.NumberFormat
+import com.google.android.material.snackbar.Snackbar
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
-// View Extensions
-fun View.visible() {
-    visibility = View.VISIBLE
+/**
+ * Extension functions and utilities used across the app.
+ */
+
+// ── Network Connectivity Check ──────────────────────────────────────
+
+/**
+ * Returns true if the device has an active internet connection.
+ * Use before any API call to show graceful error.
+ */
+fun Context.isNetworkAvailable(): Boolean {
+    val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = cm.activeNetwork ?: return false
+    val capabilities = cm.getNetworkCapabilities(network) ?: return false
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
 }
 
-fun View.gone() {
-    visibility = View.GONE
+/**
+ * Shows a Snackbar error and prevents the action if offline.
+ * Returns true if network is available, false if not (Snackbar shown).
+ *
+ * Usage:
+ *   if (!rootView.requireNetwork(context)) return
+ */
+fun View.requireNetwork(context: Context): Boolean {
+    if (!context.isNetworkAvailable()) {
+        Snackbar.make(this, "No internet connection. Please check your network.", Snackbar.LENGTH_LONG)
+        .setBackgroundTint(context.getColor(android.R.color.holo_red_dark))
+            .setTextColor(context.getColor(android.R.color.white))
+            .show()
+        return false
+    }
+    return true
 }
 
-fun View.invisible() {
-    visibility = View.INVISIBLE
-}
+// ── Date/Time Formatting ────────────────────────────────────────────
 
-// Context Extensions
-fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
-    Toast.makeText(this, message, duration).show()
-}
-
-// Number Extensions
-fun Double.toCurrency(): String {
-    val format = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
-    return format.format(this)
-}
-
-fun Double.toRupees(): String {
-    return "₹${String.format("%.0f", this)}"
-}
-
-// Date Extensions
-fun Date.toFormattedString(pattern: String = "dd MMM yyyy, hh:mm a"): String {
-    val sdf = SimpleDateFormat(pattern, Locale.getDefault())
+fun Long.toFormattedDate(): String {
+    val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     return sdf.format(this)
 }
 
-fun String.toDate(pattern: String = "yyyy-MM-dd'T'HH:mm:ss"): Date? {
-    return try {
-        val sdf = SimpleDateFormat(pattern, Locale.getDefault())
-        sdf.parse(this)
-    } catch (e: Exception) {
-        null
-    }
+fun Long.toFormattedDateTime(): String {
+    val sdf = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())
+    return sdf.format(this)
 }
 
-fun getCurrentDateTime(): String {
-    val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
-    return sdf.format(Date())
+fun Long.toTimeOnly(): String {
+    val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+    return sdf.format(this)
 }
 
-fun getEndTime(hours: Int): String {
-    val calendar = Calendar.getInstance()
-    calendar.add(Calendar.HOUR_OF_DAY, hours)
-    val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
-    return sdf.format(calendar.time)
-}
+// ── Currency Formatting ─────────────────────────────────────────────
 
-// String Extensions
-fun String.isValidPhone(): Boolean {
-    return this.length == 10 && this.all { it.isDigit() }
-}
+fun Double.toRupees(): String = "₹${this.toInt()}"
 
-fun String.isValidOtp(): Boolean {
-    return this.length == 6 && this.all { it.isDigit() }
-}
+// ── String Extensions ───────────────────────────────────────────────
 
-fun String.isValidEmail(): Boolean {
-    return android.util.Patterns.EMAIL_ADDRESS.matcher(this).matches()
-}
+fun String.isValidEmail(): Boolean =
+    android.util.Patterns.EMAIL_ADDRESS.matcher(this).matches()
+
+fun String.isValidPhone(): Boolean = this.length >= 10

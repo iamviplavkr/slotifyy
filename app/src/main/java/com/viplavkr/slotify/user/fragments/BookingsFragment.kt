@@ -1,115 +1,155 @@
 package com.viplavkr.slotify.user.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.NumberPicker
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.tabs.TabLayout
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.viplavkr.slotify.R
-import com.viplavkr.slotify.common.models.BookingStatus
-import com.viplavkr.slotify.common.utils.gone
-import com.viplavkr.slotify.common.utils.showToast
-import com.viplavkr.slotify.common.utils.visible
-import com.viplavkr.slotify.databinding.FragmentBookingsBinding
+import com.viplavkr.slotify.common.auth.AuthManager
+import com.viplavkr.slotify.common.models.Booking
+import com.viplavkr.slotify.common.utils.Constants
+import com.viplavkr.slotify.user.activities.ConfirmationActivity
 import com.viplavkr.slotify.user.adapters.BookingsAdapter
 import com.viplavkr.slotify.user.viewmodels.BookingsViewModel
 
+/**
+ * Shows the user's booking history.
+ * Active bookings have Extend / QR / Cancel buttons.
+ *
+ * "Extend Time" opens a bottom sheet where user picks additional hours,
+ * checks availability, and processes an extension payment.
+ */
 class BookingsFragment : Fragment() {
 
-    private var _binding: FragmentBookingsBinding? = null
-    private val binding get() = _binding!!
-
     private lateinit var viewModel: BookingsViewModel
+    private lateinit var authManager: AuthManager
     private lateinit var adapter: BookingsAdapter
-    private var currentTab = BookingStatus.ACTIVE
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentBookingsBinding.inflate(inflater, container, false)
-        return binding.root
+    private lateinit var rvBookings: RecyclerView
+    private lateinit var tvEmpty: TextView
+    private lateinit var progressBar: ProgressBar
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_bookings, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        authManager = AuthManager(requireContext())
         viewModel = ViewModelProvider(this)[BookingsViewModel::class.java]
 
-        setupTabs()
+        rvBookings = view.findViewById(R.id.rvBookings)
+        tvEmpty = view.findViewById(R.id.tvEmpty)
+        progressBar = view.findViewById(R.id.progressBar)
+
         setupRecyclerView()
         observeViewModel()
-
-        viewModel.loadBookings()
-    }
-
-    private fun setupTabs() {
-        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                currentTab = when (tab?.position) {
-                    0 -> BookingStatus.ACTIVE
-                    1 -> BookingStatus.COMPLETED
-                    else -> BookingStatus.ACTIVE
-                }
-                filterBookings()
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-        })
+        loadData()
     }
 
     private fun setupRecyclerView() {
-        adapter = BookingsAdapter { booking ->
-            // Handle booking click - show QR code or details
-            requireContext().showToast("Booking: ${booking.bookingId}")
-        }
-
-        binding.rvBookings.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = this@BookingsFragment.adapter
-        }
-    }
-
-    private fun filterBookings() {
-        val allBookings = viewModel.bookings.value ?: return
-        val filteredBookings = allBookings.filter { it.status == currentTab }
-        adapter.updateBookings(filteredBookings)
-
-        if (filteredBookings.isEmpty()) {
-            binding.emptyState.visible()
-            binding.rvBookings.gone()
-            binding.tvEmptyMessage.text = if (currentTab == BookingStatus.ACTIVE) {
-                "No active bookings"
-            } else {
-                "No completed bookings"
-            }
-        } else {
-            binding.emptyState.gone()
-            binding.rvBookings.visible()
-        }
+        adapter = BookingsAdapter(
+            onExtendClicked = { booking -> showExtendBottomSheet(booking) },
+            onViewQrClicked = { booking -> navigateToConfirmation(booking) },
+            onCancelClicked = { booking -> cancelBooking(booking) }
+        )
+        rvBookings.layoutManager = LinearLayoutManager(requireContext())
+        rvBookings.adapter = adapter
     }
 
     private fun observeViewModel() {
-        viewModel.bookings.observe(viewLifecycleOwner) {
-            filterBookings()
+        viewModel.bookings.observe(viewLifecycleOwner) { bookings ->
+            adapter.submitList(bookings)
+            tvEmpty.visibility = if (bookings.isEmpty()) View.VISIBLE else View.GONE
         }
 
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        viewModel.extensionResult.observe(viewLifecycleOwner) { result ->
+            result?.let {
+                it.onSuccess { booking ->
+                    Toast.makeText(requireContext(),
+                        "Extended! New end time updated. Additional charge applied.",
+                    Toast.LENGTH_LONG).show()
+                    loadData() // Refresh list
+                }
+                it.onFailure { error ->
+                    Toast.makeText(requireContext(), error.message, Toast.LENGTH_LONG).show()
+                }
+                viewModel.clearExtensionResult()
+            }
         }
 
-        viewModel.error.observe(viewLifecycleOwner) { error ->
-            error?.let { requireContext().showToast(it) }
+        viewModel.isLoading.observe(viewLifecycleOwner) { loading ->
+            progressBar.visibility = if (loading) View.VISIBLE else View.GONE
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    private fun loadData() {
+        val userId = authManager.getUserId() ?: return
+        viewModel.loadBookings(userId)
+    }
+
+    private fun showExtendBottomSheet(booking: Booking) {
+        val dialog = BottomSheetDialog(requireContext())
+        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_extend, null)
+        dialog.setContentView(sheetView)
+
+        val tvSlotInfo = sheetView.findViewById<TextView>(R.id.tvSheetSlotInfo)
+        val numberPicker = sheetView.findViewById<NumberPicker>(R.id.npHours)
+        val btnConfirmExtend = sheetView.findViewById<Button>(R.id.btnConfirmExtend)
+        val tvEstimate = sheetView.findViewById<TextView>(R.id.tvEstimate)
+
+        tvSlotInfo.text = "${booking.slotNumber} • ${booking.locationName}"
+
+        numberPicker.minValue = 1
+        numberPicker.maxValue = 6
+        numberPicker.value = 1
+        numberPicker.wrapSelectorWheel = false
+
+        // Show estimated cost
+        val updateEstimate = {
+            val hours = numberPicker.value
+            val baseCost = hours * Constants.BASE_PRICE_PER_HOUR
+            val total = baseCost + Constants.EXTENSION_SURCHARGE
+            tvEstimate.text = "Estimated: ₹${total.toInt()} (₹${Constants.EXTENSION_SURCHARGE.toInt()} surcharge)"
+        }
+        updateEstimate()
+
+        numberPicker.setOnValueChangedListener { _, _, _ -> updateEstimate() }
+
+        btnConfirmExtend.setOnClickListener {
+            viewModel.extendBooking(booking.id, numberPicker.value)
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun navigateToConfirmation(booking: Booking) {
+        val intent = Intent(requireContext(), ConfirmationActivity::class.java)
+        intent.putExtra(Constants.EXTRA_BOOKING_ID, booking.id)
+        startActivity(intent)
+    }
+
+    private fun cancelBooking(booking: Booking) {
+        val userId = authManager.getUserId() ?: return
+        viewModel.cancelBooking(booking.id, userId)
+        Toast.makeText(requireContext(), "Booking cancelled", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadData() // Refresh on return
     }
 }

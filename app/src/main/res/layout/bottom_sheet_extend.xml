@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_bottom_sheet"
+    android:padding="24dp">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="@color/text_hint" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Extend Booking"
+        android:textColor="@color/text_primary"
+        android:textSize="20sp"
+        android:fontFamily="sans-serif-bold"
+        android:gravity="center_horizontal" />
+
+    <!-- Slot Info -->
+    <TextView
+        android:id="@+id/tvSheetSlotInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        android:gravity="center_horizontal" />
+
+    <!-- Label -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Additional Hours"
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp"
+        android:fontFamily="sans-serif-medium" />
+
+    <!-- Number Picker -->
+    <NumberPicker
+        android:id="@+id/npHours"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_marginTop="8dp"
+        android:theme="@style/Theme.MaterialComponents.DayNight" />
+
+    <!-- Estimate -->
+    <TextView
+        android:id="@+id/tvEstimate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="@color/yellow_primary"
+        android:textSize="14sp"
+        android:gravity="end" />
+
+    <!-- Button -->
+    <Button
+        android:id="@+id/btnConfirmExtend"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="16dp"
+        android:text="Confirm Extension"
+        android:textColor="@color/black_primary"
+        android:textSize="15sp"
+        android:textAllCaps="false"
+        android:fontFamily="sans-serif-bold"
+        android:background="@drawable/bg_button_primary" />
+
+</LinearLayout>
+

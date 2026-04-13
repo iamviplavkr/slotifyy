@@ -2,140 +2,143 @@ package com.viplavkr.slotify.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.FirebaseException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.PhoneAuthCredential
-import com.google.firebase.auth.PhoneAuthOptions
-import com.google.firebase.auth.PhoneAuthProvider
-import com.viplavkr.slotify.databinding.ActivityLoginBinding
-import java.util.concurrent.TimeUnit
+import com.viplavkr.slotify.R
+import com.viplavkr.slotify.admin.activities.AdminDashboardActivity
+import com.viplavkr.slotify.common.auth.AuthManager
+import com.viplavkr.slotify.common.data.MockParkingRepository
+import com.viplavkr.slotify.common.models.Role
+import com.viplavkr.slotify.user.activities.MainActivity
 
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityLoginBinding
-    private lateinit var firebaseAuth: FirebaseAuth
-    private var verificationId: String? = null
+    private lateinit var authManager: AuthManager
+
+    private lateinit var etEmail: EditText
+    private lateinit var etPassword: EditText
+    private lateinit var btnLogin: Button
+    private lateinit var tvSignupLink: TextView
+    private lateinit var tvError: TextView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_login)
 
-        binding = ActivityLoginBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        authManager = AuthManager(this)
 
-        firebaseAuth = FirebaseAuth.getInstance()
-        setupClicks()
-    }
-
-    private fun setupClicks() {
-
-        // SEND OTP
-        binding.btnSendOtp.setOnClickListener {
-
-            val phone = binding.etPhone.text.toString().trim()
-
-            if (phone.length != 10) {
-                binding.etPhone.error = "Enter valid phone number"
-                return@setOnClickListener
-            }
-
-            sendOtp("+91$phone")
-        }
-
-        // VERIFY OTP
-        binding.btnVerifyOtp.setOnClickListener {
-
-            val otp = binding.etOtp.text.toString().trim()
-
-            if (otp.length != 6) {
-                binding.etOtp.error = "Enter valid OTP"
-                return@setOnClickListener
-            }
-
-            verifyOtp(otp)
-        }
-    }
-
-    // =========================
-    // SEND OTP
-    // =========================
-    private fun sendOtp(phone: String) {
-
-        val options = PhoneAuthOptions.newBuilder(firebaseAuth)
-            .setPhoneNumber(phone)
-            .setTimeout(60L, TimeUnit.SECONDS)
-            .setActivity(this)
-            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-
-                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                    signInWithCredential(credential)
-                }
-
-                override fun onVerificationFailed(e: FirebaseException) {
-                    Log.e("OTP", "Verification failed", e)
-                    binding.etPhone.error = "OTP failed"
-                }
-
-                override fun onCodeSent(
-                    verId: String,
-                    token: PhoneAuthProvider.ForceResendingToken
-                ) {
-                    verificationId = verId
-                    Log.d("OTP", "OTP Sent Successfully")
-                }
-            })
-            .build()
-
-        PhoneAuthProvider.verifyPhoneNumber(options)
-    }
-
-    // =========================
-    // VERIFY OTP
-    // =========================
-    private fun verifyOtp(otp: String) {
-
-        val verId = verificationId
-
-        if (verId == null) {
-            binding.etOtp.error = "Please request OTP first"
+        if (authManager.isLoggedIn()) {
+            routeToDashboard()
             return
         }
 
-        val credential = PhoneAuthProvider.getCredential(verId, otp)
-        signInWithCredential(credential)
+        initViews()
+        setupListeners()
     }
 
-    // =========================
-    // FINAL SIGN IN
-    // =========================
-    private fun signInWithCredential(credential: PhoneAuthCredential) {
+    private fun initViews() {
+        etEmail = findViewById(R.id.etEmail)
+        etPassword = findViewById(R.id.etPassword)
+        btnLogin = findViewById(R.id.btnLogin)
+        tvSignupLink = findViewById(R.id.tvSignupLink)
+        tvError = findViewById(R.id.tvError)
+        progressBar = findViewById(R.id.progressBar)
 
-        firebaseAuth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
+        tvError.visibility = View.GONE
+        progressBar.visibility = View.GONE
+        btnLogin.isEnabled = false
+        btnLogin.alpha = 0.5f
+    }
 
-                if (task.isSuccessful) {
+    private fun setupListeners() {
+        val watcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-                    Log.d("OTP", "Login Successful")
-
-                    // 🔥 MOVE TO MAIN ACTIVITY
-                    val intent = Intent(this, com.viplavkr.slotify.user.activities.MainActivity::class.java)
-
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
-
-                } else {
-                    binding.etOtp.error = "Invalid OTP"
-                    Log.e("OTP", "Login Failed", task.exception)
-                }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val emailFilled = etEmail.text.toString().trim().isNotEmpty()
+                val passFilled = etPassword.text.toString().isNotEmpty()
+                btnLogin.isEnabled = emailFilled && passFilled
+                btnLogin.alpha = if (btnLogin.isEnabled) 1f else 0.5f
             }
+
+            override fun afterTextChanged(s: Editable?) {}
+        }
+
+        etEmail.addTextChangedListener(watcher)
+        etPassword.addTextChangedListener(watcher)
+
+        btnLogin.setOnClickListener { attemptLogin() }
+
+        tvSignupLink.setOnClickListener {
+            try {
+                startActivity(Intent(this, SignupActivity::class.java))
+            } catch (e: Exception) {
+                Toast.makeText(this, "Signup screen not available", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
-    private fun saveJwt(token: String) {
-        val prefs = getSharedPreferences("slotify_prefs", MODE_PRIVATE)
-        prefs.edit().putString("jwt_token", token).apply()
+    private fun attemptLogin() {
+        val email = etEmail.text.toString().trim()
+        val password = etPassword.text.toString()
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            showError("Please enter a valid email")
+            return
+        }
+
+        if (password.length < 6) {
+            showError("Password must be at least 6 characters")
+            return
+        }
+
+        setLoading(true)
+
+        btnLogin.postDelayed({
+
+            val user = MockParkingRepository.login(email, password)
+
+            setLoading(false)
+
+            if (user != null) {
+                authManager.saveSession(user)
+                Toast.makeText(this, "Welcome back, ${user.name}!", Toast.LENGTH_SHORT).show()
+                routeToDashboard()
+            } else {
+                showError("Invalid credentials")
+            }
+
+        }, 800)
     }
 
+    private fun routeToDashboard() {
+
+        val role = authManager.getUserRole()
+
+        val intent = when (role) {
+            Role.ADMIN -> Intent(this, AdminDashboardActivity::class.java)
+            Role.USER -> Intent(this, MainActivity::class.java)
+            else -> Intent(this, MainActivity::class.java) // fallback
+        }
+
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+    private fun showError(msg: String) {
+        tvError.text = msg
+        tvError.visibility = View.VISIBLE
+    }
+
+    private fun setLoading(loading: Boolean) {
+        progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+        btnLogin.isEnabled = !loading
+        btnLogin.text = if (loading) "Please wait..." else "Log In"
+    }
 }
+

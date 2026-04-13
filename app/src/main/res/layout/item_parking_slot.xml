@@ -1,101 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardSlot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/margin_medium"
-    app:cardBackgroundColor="@color/background_card"
-    app:cardCornerRadius="@dimen/card_corner_radius"
-    app:cardElevation="@dimen/card_elevation"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?attr/selectableItemBackground">
+    android:layout_margin="4dp"
+    app:cardBackgroundColor="@color/surface_card"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/padding_medium">
+        android:padding="12dp">
 
+        <!-- Vehicle Icon -->
+        <ImageView
+            android:id="@+id/ivVehicleType"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_car_standard"
+            app:tint="@color/text_secondary"
+            android:contentDescription="Vehicle type"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="@dimen/margin_small">
-
-            <TextView
-                android:id="@+id/slotNameText"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Parking Name"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_large"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/slotRatingText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="★ 4.5"
-                android:textColor="@color/accent_yellow"
-                android:textSize="@dimen/text_medium" />
-
-        </LinearLayout>
-
-
+        <!-- Slot Number -->
         <TextView
-            android:id="@+id/slotAddressText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Address"
-            android:textColor="@color/text_secondary"
-            android:textSize="@dimen/text_small"
-            android:layout_marginBottom="@dimen/margin_medium" />
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/slotDistanceText"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="0.5 km"
-                android:textColor="@color/text_muted"
-                android:textSize="@dimen/text_small" />
-
-            <TextView
-                android:id="@+id/slotPriceText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/price_format"
-                android:textColor="@color/accent_yellow"
-                android:textSize="@dimen/text_medium"
-                android:textStyle="bold"
-                android:layout_marginStart="@dimen/margin_medium" />
-
-
-        </LinearLayout>
-
-
-        <TextView
-            android:id="@+id/slotAvailabilityText"
+            android:id="@+id/tvSlotNumber"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="12 slots available"
-            android:textColor="@color/success_green"
-            android:textSize="@dimen/text_small"
-            android:textStyle="bold"
-            android:layout_marginTop="@dimen/margin_small"
-            android:background="@drawable/card_background"
-            android:padding="6dp" />
+            android:layout_marginStart="8dp"
+            android:text="A-01"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-bold"
+            app:layout_constraintStart_toEndOf="@id/ivVehicleType"
+            app:layout_constraintTop_toTopOf="@id/ivVehicleType"
+            app:layout_constraintBottom_toBottomOf="@id/ivVehicleType"/>
 
-    </LinearLayout>
+        <!-- Price -->
+        <TextView
+            android:id="@+id/tvPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="₹40/hr"
+            android:textColor="@color/yellow_primary"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Status -->
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Available"
+            android:textColor="@color/status_available"
+            android:textSize="11sp"
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintTop_toBottomOf="@id/tvPrice"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Floor -->
+        <TextView
+            android:id="@+id/tvFloor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Ground"
+            android:textColor="@color/text_hint"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivVehicleType"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>
+

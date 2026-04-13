@@ -3,146 +3,145 @@ package com.viplavkr.slotify.user.activities
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Size
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
-import com.viplavkr.slotify.common.utils.showToast
-import com.viplavkr.slotify.databinding.ActivityScannerBinding
-import java.util.concurrent.ExecutorService
+import com.viplavkr.slotify.R
 import java.util.concurrent.Executors
 
+@androidx.camera.core.ExperimentalGetImage
 class ScannerActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityScannerBinding
-    private lateinit var cameraExecutor: ExecutorService
-    private var isScanning = true
+    private lateinit var previewView: PreviewView
+    private val cameraExecutor = Executors.newSingleThreadExecutor()
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            startCamera()
-        } else {
-            showToast("Camera permission is required for QR scanning")
-            finish()
+    // 🔥 Prevent multiple scans
+    private var isScanned = false
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) startCamera()
+            else Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityScannerBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_scanner)
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
+        previewView = findViewById(R.id.previewView)
 
-        setupToolbar()
-        checkCameraPermission()
-    }
-
-    private fun setupToolbar() {
-        binding.btnBack.setOnClickListener { finish() }
-    }
-
-    private fun checkCameraPermission() {
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                startCamera()
-            }
-            else -> {
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-            }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            startCamera()
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
     private fun startCamera() {
+
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
+
             val cameraProvider = cameraProviderFuture.get()
 
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.previewView.surfaceProvider)
-                }
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(previewView.surfaceProvider)
+            }
 
-            val imageAnalyzer = ImageAnalysis.Builder()
-                .setTargetResolution(Size(1280, 720))
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
-                .also {
-                    it.setAnalyzer(cameraExecutor) { imageProxy ->
-                        processImage(imageProxy)
+            val barcodeScanner = BarcodeScanning.getClient()
+
+            val imageAnalyzer = ImageAnalysis.Builder().build().also {
+
+                it.setAnalyzer(cameraExecutor) { imageProxy ->
+
+                    if (isScanned) {
+                        imageProxy.close()
+                        return@setAnalyzer
+                    }
+
+                    val mediaImage = imageProxy.image
+
+                    if (mediaImage != null) {
+
+                        val image = InputImage.fromMediaImage(
+                            mediaImage,
+                            imageProxy.imageInfo.rotationDegrees
+                        )
+
+                        barcodeScanner.process(image)
+                            .addOnSuccessListener { barcodes ->
+
+                                for (barcode in barcodes) {
+                                    val value = barcode.rawValue
+
+                                    if (!value.isNullOrEmpty() && !isScanned) {
+
+                                        isScanned = true   // 🔥 lock scan
+
+                                        runOnUiThread {
+                                            handleScannedData(value)
+                                        }
+
+                                        break
+                                    }
+                                }
+                            }
+                            .addOnCompleteListener {
+                                imageProxy.close()
+                            }
+
+                    } else {
+                        imageProxy.close()
                     }
                 }
+            }
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageAnalyzer
-                )
-            } catch (e: Exception) {
-                showToast("Failed to start camera")
-            }
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                this,
+                cameraSelector,
+                preview,
+                imageAnalyzer
+            )
 
         }, ContextCompat.getMainExecutor(this))
     }
 
-    @androidx.annotation.OptIn(ExperimentalGetImage::class)
-    private fun processImage(imageProxy: ImageProxy) {
-        if (!isScanning) {
-            imageProxy.close()
+    private fun handleScannedData(data: String) {
+
+        if (!data.startsWith("SLOTIFY")) {
+            Toast.makeText(this, "Invalid QR Code", Toast.LENGTH_SHORT).show()
+            isScanned = false
             return
         }
 
-        val mediaImage = imageProxy.image
-        if (mediaImage != null) {
-            val image = InputImage.fromMediaImage(
-                mediaImage,
-                imageProxy.imageInfo.rotationDegrees
-            )
+        val parts = data.split("|")
 
-            val scanner = BarcodeScanning.getClient()
-
-            scanner.process(image)
-                .addOnSuccessListener { barcodes ->
-                    for (barcode in barcodes) {
-                        barcode.rawValue?.let { value ->
-                            isScanning = false
-                            handleScannedCode(value)
-                        }
-                    }
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
-        } else {
-            imageProxy.close()
+        if (parts.size < 2) {
+            Toast.makeText(this, "Invalid QR Format", Toast.LENGTH_SHORT).show()
+            isScanned = false
+            return
         }
-    }
 
-    private fun handleScannedCode(data: String) {
-        runOnUiThread {
-            binding.tvScannedData.text = data
-            showToast("QR Code Scanned!")
+        val bookingId = parts[1]
 
-            // You can parse the data and perform actions
-            // For now, just display and allow rescan
-            binding.btnRescan.setOnClickListener {
-                isScanning = true
-                binding.tvScannedData.text = "Point camera at QR code"
-            }
-        }
+        Toast.makeText(this, "Booking ID: $bookingId", Toast.LENGTH_LONG).show()
+
+        // 👉 NEXT STEP: connect validation
+        // MockParkingRepository.validateEntry(bookingId)
+
+        finish()
     }
 
     override fun onDestroy() {

@@ -1,15 +1,18 @@
 package com.viplavkr.slotify.common.models
 
-import java.io.Serializable
+import java.util.UUID
 
+/**
+ * Core User data class used across the app.
+ * Serializable so it can be passed between Activities via Intent extras.
+ */
 data class User(
-    val id: String,
+    val id: String = UUID.randomUUID().toString(),
     val name: String,
+    val email: String,
     val phone: String,
-    val email: String = "",
-    val role: String = "USER",
-    val isActive: Boolean = true,
-    val createdAt: String = "",
-    val totalBookings: Int = 0,
-    val totalSpent: Double = 0.0
-) : Serializable
+    val password: String,
+    val role: Role = Role.USER,
+    val profileImageUrl: String? = null,
+    val createdAt: Long = System.currentTimeMillis()
+) : java.io.Serializable

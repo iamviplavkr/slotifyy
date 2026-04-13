@@ -1,34 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base App Theme -->
-    <style name="Theme.Slotify" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Primary brand color -->
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_dark</item>
-        <item name="colorOnPrimary">@color/background</item>
 
-        <!-- Secondary brand color -->
-        <item name="colorSecondary">@color/primary</item>
-        <item name="colorSecondaryVariant">@color/primary_dark</item>
-        <item name="colorOnSecondary">@color/background</item>
+    <!-- ================= BASE THEME ================= -->
+    <style name="Theme.Slotify" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
-        <!-- Background colors -->
-        <item name="android:colorBackground">@color/background</item>
-        <item name="colorSurface">@color/surface</item>
-        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorPrimary">@color/yellow_primary</item>
+        <item name="colorPrimaryVariant">@color/yellow_dark</item>
+        <item name="colorOnPrimary">@color/black_primary</item>
 
-        <!-- Status bar color -->
-        <item name="android:statusBarColor">@color/background</item>
-        <item name="android:navigationBarColor">@color/background</item>
+        <item name="colorSecondary">@color/yellow_primary</item>
+        <item name="colorOnSecondary">@color/black_primary</item>
+
+        <item name="android:windowBackground">@color/black_primary</item>
+        <item name="android:statusBarColor">@color/black_primary</item>
+        <item name="android:navigationBarColor">@color/black_primary</item>
         <item name="android:windowLightStatusBar">false</item>
 
-        <!-- Error color -->
-        <item name="colorError">@color/error</item>
-        <item name="colorOnError">@color/white</item>
     </style>
 
-    <!-- Splash Theme -->
-    <style name="Theme.Slotify.Splash" parent="Theme.Slotify">
-        <item name="android:windowBackground">@color/background</item>
+    <!-- ================= SPLASH THEME ================= -->
+    <style name="Theme.Slotify.Splash" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@color/black_primary</item>
+
     </style>
+
+    <!-- ================= DATE PICKER ================= -->
+    <style name="SlotifyDatePicker" parent="Theme.MaterialComponents.DayNight.Dialog">
+
+        <item name="colorPrimary">@color/yellow_primary</item>
+        <item name="colorOnPrimary">@color/black_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:windowBackground">@color/surface_card</item>
+
+    </style>
+
+    <!-- ================= TIME PICKER ================= -->
+    <style name="SlotifyTimePicker" parent="Theme.MaterialComponents.DayNight.Dialog">
+
+        <item name="colorPrimary">@color/yellow_primary</item>
+        <item name="colorOnPrimary">@color/black_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:windowBackground">@color/surface_card</item>
+
+    </style>
+
 </resources>

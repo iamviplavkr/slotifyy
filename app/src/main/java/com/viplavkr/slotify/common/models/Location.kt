@@ -1,7 +1,9 @@
 package com.viplavkr.slotify.common.models
 
-import java.io.Serializable
-
+/**
+ * Represents a physical parking location (e.g., a mall or office building).
+ * Each Location contains multiple ParkingSlots.
+ */
 data class Location(
     val id: String,
     val name: String,
@@ -10,11 +12,7 @@ data class Location(
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
     val totalSlots: Int = 0,
-    val availableSlots: Int = 0,
-    val isActive: Boolean = true,
-    val pricePerHour: Double = 50.0,
-    val openTime: String = "06:00",
-    val closeTime: String = "22:00",
-    val amenities: List<String> = emptyList(),
-    val imageUrl: String = ""
-) : Serializable
+    val imageUrl: String? = null,
+    val rating: Float = 4.0f,
+    val isActive: Boolean = true
+) : java.io.Serializable

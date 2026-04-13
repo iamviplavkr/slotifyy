@@ -1,75 +1,39 @@
 package com.viplavkr.slotify.admin.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.viplavkr.slotify.R
 import com.viplavkr.slotify.common.models.User
-import com.viplavkr.slotify.databinding.ItemUserBinding
 
 class UsersAdapter(
-    private val onViewDetails: (User) -> Unit,
-    private val onToggleStatus: (User) -> Unit
-) : ListAdapter<User, UsersAdapter.UserViewHolder>(UserDiffCallback()) {
+    private val users: List<User>
+) : RecyclerView.Adapter<UsersAdapter.VH>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-        val binding = ItemUserBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return UserViewHolder(binding)
+    inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val tvName: TextView = itemView.findViewById(R.id.tvAdminUserName)
+        val tvEmail: TextView = itemView.findViewById(R.id.tvAdminUserEmail)
+        val tvRole: TextView = itemView.findViewById(R.id.tvAdminUserRole)
+        val tvPhone: TextView = itemView.findViewById(R.id.tvAdminUserPhone)
     }
 
-    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_admin_user, parent, false)
+        return VH(view)
     }
 
-    fun updateUsers(users: List<User>) {
-        submitList(users)
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        val u = users[position]
+        holder.tvName.text = u.name
+        holder.tvEmail.text = u.email
+        holder.tvPhone.text = u.phone
+        holder.tvRole.text = u.role.name
+        val roleColor = if (u.role.name == "ADMIN") R.color.yellow_primary else R.color.status_active
+        holder.tvRole.setTextColor(holder.itemView.context.getColor(roleColor))
     }
 
-    inner class UserViewHolder(
-        private val binding: ItemUserBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
-
-        fun bind(user: User) {
-            binding.apply {
-                tvUserName.text = user.name
-                tvUserPhone.text = user.phone
-                tvUserEmail.text = user.email
-                tvTotalBookings.text = "${user.totalBookings} bookings"
-                tvTotalSpent.text = "₹${user.totalSpent.toInt()}"
-                tvMemberSince.text = "Since ${user.createdAt}"
-
-                // Avatar initial
-                tvAvatarInitial.text = user.name.firstOrNull()?.uppercase() ?: "U"
-
-                // Status badge
-                if (user.isActive) {
-                    tvStatus.text = "Active"
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_active)
-                } else {
-                    tvStatus.text = "Inactive"
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_inactive)
-                }
-
-                root.setOnClickListener { onViewDetails(user) }
-                btnToggleStatus.setOnClickListener { onToggleStatus(user) }
-                btnToggleStatus.text = if (user.isActive) "Deactivate" else "Activate"
-            }
-        }
-    }
-
-    class UserDiffCallback : DiffUtil.ItemCallback<User>() {
-        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
-            return oldItem == newItem
-        }
-    }
+    override fun getItemCount() = users.size
 }

@@ -4,67 +4,67 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/black_primary">
 
+    <!-- Logo -->
     <ImageView
-        android:id="@+id/ivLogo"
+        android:id="@+id/ivSplashLogo"
         android:layout_width="120dp"
         android:layout_height="120dp"
-        android:src="@drawable/bg_logo_circle"
-        app:layout_constraintBottom_toTopOf="@+id/tvAppName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/bg_logo_circle"
+        android:padding="24dp"
+        android:src="@drawable/ic_parking"
+        app:tint="@color/black_primary"
+        android:contentDescription="@string/app_name"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintBottom_toTopOf="@id/tvAppName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <TextView
-        android:id="@+id/tvLogoText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="S"
-        android:textColor="@color/background"
-        android:textSize="48sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/ivLogo"
-        app:layout_constraintEnd_toEndOf="@id/ivLogo"
-        app:layout_constraintStart_toStartOf="@id/ivLogo"
-        app:layout_constraintTop_toTopOf="@id/ivLogo" />
-
+    <!-- App Name -->
     <TextView
         android:id="@+id/tvAppName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/app_name"
-        android:textColor="@color/primary"
+        android:layout_marginTop="16dp"
+        android:text="SLOTIFY"
+        android:textColor="@color/yellow_primary"
         android:textSize="36sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/tvTagline"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:fontFamily="sans-serif-black"
+        android:letterSpacing="0.1"
+        app:layout_constraintTop_toBottomOf="@id/ivSplashLogo"
+        app:layout_constraintBottom_toTopOf="@id/tvTagline"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ivLogo" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Tagline -->
     <TextView
         android:id="@+id/tvTagline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/tagline"
+        android:text="Park Smart. Park Fast."
         android:textColor="@color/text_secondary"
         android:textSize="16sp"
+        android:fontFamily="sans-serif-light"
+        app:layout_constraintTop_toBottomOf="@id/tvAppName"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvAppName" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.4"/>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
+    <!-- Version -->
+    <TextView
+        android:id="@+id/tvVersion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="48dp"
-        android:indeterminateTint="@color/primary"
+        android:text="v1.0.0"
+        android:textColor="@color/text_hint"
+        android:textSize="12sp"
+        android:layout_marginBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

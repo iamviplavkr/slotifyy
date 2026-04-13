@@ -1,149 +1,138 @@
 package com.viplavkr.slotify.user.fragments
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.Geocoder
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import android.widget.EditText
+import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.viplavkr.slotify.R
 import com.viplavkr.slotify.common.auth.AuthManager
-import com.viplavkr.slotify.databinding.FragmentHomeBinding
-import com.viplavkr.slotify.user.activities.ScannerActivity
+import com.viplavkr.slotify.common.data.MockParkingRepository
+import com.viplavkr.slotify.common.models.Location
+import com.viplavkr.slotify.common.utils.Constants
 import com.viplavkr.slotify.user.activities.SlotsActivity
 import java.util.*
-import com.google.android.material.bottomnavigation.BottomNavigationView
-
 
 class HomeFragment : Fragment() {
 
-    private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
-
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-
-    private val requestLocationPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            getCurrentLocation()
-        }
-    }
+    private lateinit var authManager: AuthManager
+    private lateinit var adapter: LocationsAdapter
+    private var allLocations: List<Location> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        return binding.root
+        return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        authManager = AuthManager(requireContext())
 
-        setupGreeting()
-        setupQuickActions()
-        setupStats()
-        checkLocationPermission()
+        setupGreeting(view)
+        setupSearch(view)
+        setupLocations(view)
     }
 
-    private fun setupGreeting() {
-        val user = AuthManager.getUser()
-        val firstName = user?.name?.split(" ")?.firstOrNull() ?: "User"
-        binding.tvGreeting.text = "Hello, $firstName!"
-        binding.tvSubtitle.text = "Find your perfect parking spot"
+    // ✅ Greeting
+    private fun setupGreeting(view: View) {
+        val tvGreeting = view.findViewById<TextView>(R.id.tvGreeting)
+        val tvSubGreeting = view.findViewById<TextView>(R.id.tvSubGreeting)
+
+        val name = authManager.getUserName() ?: "User"
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+
+        val greeting = when {
+            hour < 12 -> "Good morning"
+            hour < 17 -> "Good afternoon"
+            else -> "Good evening"
+        }
+
+        tvGreeting.text = "$greeting, ${name.split(" ").first()}!"
+        tvSubGreeting.text = "Where are you parking today?"
     }
 
-    private fun setupQuickActions() {
-        // Find Parking
-        binding.cardFindParking.setOnClickListener {
-            startActivity(Intent(requireContext(), SlotsActivity::class.java))
-        }
+    // ✅ Search
+    private fun setupSearch(view: View) {
+        val etSearch = view.findViewById<EditText>(R.id.etSearch)
 
-        // Scan QR
-        binding.cardScanQr.setOnClickListener {
-            startActivity(Intent(requireContext(), ScannerActivity::class.java))
-        }
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun afterTextChanged(s: Editable?) {}
 
-        // My Bookings - Navigate to bookings tab
-        binding.cardMyBookings.setOnClickListener {
-            (activity as? com.viplavkr.slotify.user.activities.MainActivity)?.let { mainActivity ->
-                val bottomNav =
-                    mainActivity.findViewById<BottomNavigationView>(R.id.bottomNavigation)
-                bottomNav.selectedItemId = R.id.nav_bookings
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterLocations(s.toString())
             }
-
-        }
-
-        // Quick Book
-        binding.cardQuickBook.setOnClickListener {
-            startActivity(Intent(requireContext(), SlotsActivity::class.java))
-        }
-
-        // Main Find Parking Button
-        binding.btnFindParking.setOnClickListener {
-            startActivity(Intent(requireContext(), SlotsActivity::class.java))
-        }
+        })
     }
 
-    private fun setupStats() {
-        // Mock stats
-        binding.tvAvailableSlots.text = "150+"
-        binding.tvSupport.text = "24/7"
-    }
-
-    private fun checkLocationPermission() {
-        when {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                getCurrentLocation()
-            }
-            else -> {
-                requestLocationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    private fun filterLocations(query: String) {
+        val filtered = if (query.isBlank()) {
+            allLocations
+        } else {
+            allLocations.filter {
+                it.name.contains(query, true) ||
+                        it.address.contains(query, true)
             }
         }
+        adapter.updateList(filtered)
     }
 
-    private fun getCurrentLocation() {
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
+    // ✅ RecyclerView
+    private fun setupLocations(view: View) {
+        val rv = view.findViewById<RecyclerView>(R.id.rvLocations)
+
+        allLocations = MockParkingRepository.getAllLocations()
+
+        adapter = LocationsAdapter(allLocations) { location ->
+            val intent = Intent(requireContext(), SlotsActivity::class.java)
+            intent.putExtra(Constants.EXTRA_LOCATION, location.id)
+            startActivity(intent)
         }
 
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            location?.let {
-                try {
-                    val geocoder = Geocoder(requireContext(), Locale.getDefault())
-                    @Suppress("DEPRECATION")
-                    val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
-                    if (!addresses.isNullOrEmpty()) {
-                        val city = addresses[0].locality ?: addresses[0].subAdminArea ?: "Unknown"
-                        binding.tvLocation.text = city
-                    }
-                } catch (e: Exception) {
-                    binding.tvLocation.text = "Location Available"
-                }
-            }
-        }
+        rv.layoutManager = LinearLayoutManager(requireContext())
+        rv.adapter = adapter
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    // ✅ Adapter
+    inner class LocationsAdapter(
+        private var items: List<Location>,
+        private val onClick: (Location) -> Unit
+    ) : RecyclerView.Adapter<LocationsAdapter.VH>() {
+
+        fun updateList(newItems: List<Location>) {
+            items = newItems
+            notifyDataSetChanged()
+        }
+
+        inner class VH(view: View) : RecyclerView.ViewHolder(view) {
+            val name: TextView = view.findViewById(R.id.tvLocationName)
+            val address: TextView = view.findViewById(R.id.tvAddress)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_location, parent, false)
+            return VH(view)
+        }
+
+        override fun onBindViewHolder(holder: VH, position: Int) {
+            val loc = items[position]
+            holder.name.text = loc.name
+            holder.address.text = loc.address
+            holder.itemView.setOnClickListener { onClick(loc) }
+        }
+
+        override fun getItemCount() = items.size
     }
 }
