@@ -51,6 +51,10 @@ B.Tech CSE – 2027
 ---
  PPT LINK : https://docs.google.com/presentation/d/18f_GjIvWyUSBWhB85A0WhsRrWf8UBQnK/edit?usp=sharing&ouid=114189091719104105822&rtpof=true&sd=true
 
+ ADMIN DEMO : https://drive.google.com/file/d/1co4dbENCS2-Ng745H__iGghjLel-NDbo/view?usp=sharing
+
+ USER DEMO  :  https://drive.google.com/file/d/1o9NvGgaudU9rKF-QE78-XhkGYFhKnJDS/view?usp=sharing
+
 
 
 
