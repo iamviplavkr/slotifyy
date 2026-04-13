@@ -1,0 +1,6 @@
+@Slotify_HostAddress = http://localhost:5241
+
+GET {{Slotify_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
